@@ -26,6 +26,10 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 import testRoutes from './routes/test.routes';
 app.use('/api/test', testRoutes);
+import productRoutes from './routes/product.routes';
+app.use('/api/products', productRoutes);
+import stockRoutes from './routes/stock.routes';
+app.use('/api/stock', stockRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
