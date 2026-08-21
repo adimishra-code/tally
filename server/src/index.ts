@@ -38,6 +38,10 @@ import salesOrderRoutes from './routes/salesOrder.routes';
 app.use('/api/sales-orders', salesOrderRoutes);
 import alertRoutes from './routes/alert.routes';
 app.use('/api/alerts', alertRoutes);
+import auditRoutes from './routes/audit.routes';
+app.use('/api/audit', auditRoutes);
+import warehouseRoutes from './routes/warehouse.routes';
+app.use('/api/warehouses', warehouseRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
