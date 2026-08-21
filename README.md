@@ -131,18 +131,18 @@ stateDiagram-v2
     CANCELLED --> [*]
 ```
 
-## Roadmap
+## Features
 
-- [x] **Phase 1** — Schema, ERD, and state-machine design
-- [ ] Phase 2 — Auth + org/RBAC (multi-tenant)
-- [ ] Phase 3 — Product/SKU catalog + stock ledger service
-- [ ] Phase 4 — Purchase order lifecycle + approval workflow
-- [ ] Phase 5 — Receiving: barcode scan-in, variance detection, bin assignment
-- [ ] Phase 6 — Outbound fulfillment: pick, pack, ship, partial shipments
-- [ ] Phase 7 — Background jobs: low-stock, expiry, SLA-breach alerts
-- [ ] Phase 8 — Real-time dashboard + analytics
-- [ ] Phase 9 — Audit log + security hardening
-- [ ] Phase 10 — Docker, CI, deployment, seed data, public demo login
+- Multi-tenant architecture with org-scoped data isolation
+- JWT authentication with refresh token rotation
+- Role-based access control (OWNER, ADMIN, PROCUREMENT, WAREHOUSE_STAFF, FINANCE, VIEWER)
+- Append-only stock ledger for inventory tracking
+- Purchase order management with approval workflows
+- Goods receiving with variance detection
+- Sales order fulfillment (pick, pack, ship)
+- Barcode scanning support
+- Partial shipment handling
+- Transaction-safe concurrent stock operations
 
 ## Local setup
 
