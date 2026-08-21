@@ -134,7 +134,7 @@ export class PurchaseOrderService {
       po.status = PurchaseOrderStatus.PARTIALLY_RECEIVED;
     }
 
-    await po.save({ session });
+    await PurchaseOrder.updateOne({ _id: poId }, { $set: { lines: po.lines, status: po.status } }, { session });
   }
 
   /**
