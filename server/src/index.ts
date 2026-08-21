@@ -42,6 +42,8 @@ import auditRoutes from './routes/audit.routes';
 app.use('/api/audit', auditRoutes);
 import warehouseRoutes from './routes/warehouse.routes';
 app.use('/api/warehouses', warehouseRoutes);
+import userRoutes from './routes/user.routes';
+app.use('/api/users', userRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

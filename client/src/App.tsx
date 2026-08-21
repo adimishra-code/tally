@@ -7,6 +7,8 @@ import PurchaseOrders from './pages/PurchaseOrders';
 import SalesOrders from './pages/SalesOrders';
 import Inventory from './pages/Inventory';
 import Alerts from './pages/Alerts';
+import AuditLog from './pages/AuditLog';
+import Users from './pages/Users';
 import Layout from './components/Layout';
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
         <Route path="sales-orders" element={<SalesOrders />} />
         <Route path="inventory" element={<Inventory />} />
         <Route path="alerts" element={<Alerts />} />
+        <Route path="audit" element={<AuditLog />} />
+        <Route path="users" element={<Users />} />
       </Route>
     </Routes>
   );

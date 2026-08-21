@@ -35,6 +35,8 @@ export default function Layout() {
     { path: '/purchase-orders', label: 'Purchase Orders', icon: '📥' },
     { path: '/sales-orders', label: 'Sales Orders', icon: '📤' },
     { path: '/alerts', label: 'Alerts', icon: '🔔', badge: activeAlerts.length },
+    { path: '/audit', label: 'Audit Log', icon: '📋' },
+    { path: '/users', label: 'Users', icon: '👥' },
   ];
 
   return (
