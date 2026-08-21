@@ -89,11 +89,19 @@ export class PurchaseOrderService {
       po.status = nextStatus;
     }
 
-    await po.save();
+    const updated = await PurchaseOrder.findByIdAndUpdate(
+      po._id,
+      { $set: { status: po.status, approvedBy: po.approvedBy } },
+      { new: true }
+    );
+
+    if (!updated) {
+      throw new Error('Failed to update purchase order');
+    }
 
     await this.logAudit(po.orgId, userId, 'PO_TRANSITION', po._id, { status: currentStatus }, { status: po.status });
 
-    return po;
+    return updated;
   }
 
   /**
