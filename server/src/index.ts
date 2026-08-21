@@ -36,6 +36,8 @@ import receivingRoutes from './routes/receiving.routes';
 app.use('/api/receiving', receivingRoutes);
 import salesOrderRoutes from './routes/salesOrder.routes';
 app.use('/api/sales-orders', salesOrderRoutes);
+import alertRoutes from './routes/alert.routes';
+app.use('/api/alerts', alertRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
@@ -53,6 +55,11 @@ app.use((_req, res) => {
 const start = async () => {
   try {
     await connectDB();
+
+    // Start background jobs
+    const { startAllJobs } = await import('./jobs');
+    await startAllJobs();
+
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
