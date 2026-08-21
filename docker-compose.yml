@@ -1,0 +1,30 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: tally-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - tally_mongo_data:/data/db
+    command: mongod --replSet rs0
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}) }" | mongosh --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    container_name: tally-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - tally_redis_data:/data
+
+volumes:
+  tally_mongo_data:
+  tally_redis_data:

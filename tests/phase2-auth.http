@@ -1,0 +1,81 @@
+# Phase 2 - Auth & RBAC Test Collection
+
+## Signup - Create Organization & First User
+POST http://localhost:4000/api/auth/signup
+Content-Type: application/json
+
+{
+  "orgName": "Acme Warehouse Co",
+  "orgSlug": "acme-warehouse",
+  "userName": "John Owner",
+  "email": "john@acme.com",
+  "password": "SecurePass123!"
+}
+
+###
+
+## Login - Get Tokens
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@acme.com",
+  "password": "SecurePass123!",
+  "orgSlug": "acme-warehouse"
+}
+
+###
+
+## Login - Wrong Credentials (should fail)
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@acme.com",
+  "password": "WrongPassword",
+  "orgSlug": "acme-warehouse"
+}
+
+###
+
+## Login - Wrong Org (should fail)
+POST http://localhost:4000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@acme.com",
+  "password": "SecurePass123!",
+  "orgSlug": "different-org"
+}
+
+###
+
+## Refresh Token
+POST http://localhost:4000/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "PASTE_REFRESH_TOKEN_HERE"
+}
+
+###
+
+## Logout
+POST http://localhost:4000/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "PASTE_REFRESH_TOKEN_HERE"
+}
+
+###
+
+## Test Protected Route (GET /api/products example - will add in Phase 3)
+GET http://localhost:4000/api/products
+Authorization: Bearer PASTE_ACCESS_TOKEN_HERE
+
+###
+
+## Test RBAC - Should fail if role insufficient
+GET http://localhost:4000/api/admin/users
+Authorization: Bearer PASTE_ACCESS_TOKEN_HERE
