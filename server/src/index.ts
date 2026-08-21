@@ -32,6 +32,10 @@ import stockRoutes from './routes/stock.routes';
 app.use('/api/stock', stockRoutes);
 import purchaseOrderRoutes from './routes/purchaseOrder.routes';
 app.use('/api/purchase-orders', purchaseOrderRoutes);
+import receivingRoutes from './routes/receiving.routes';
+app.use('/api/receiving', receivingRoutes);
+import salesOrderRoutes from './routes/salesOrder.routes';
+app.use('/api/sales-orders', salesOrderRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
