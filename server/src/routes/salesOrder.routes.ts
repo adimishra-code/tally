@@ -154,6 +154,32 @@ router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<voi
 });
 
 /**
+ * GET /sales-orders/:id/shipments - Get shipments for a sales order
+ */
+router.get('/:id/shipments', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+
+    if (!Types.ObjectId.isValid(req.params.id)) {
+      res.status(400).json({ error: 'Invalid sales order ID' });
+      return;
+    }
+
+    const shipments = await Shipment.find({
+      salesOrderId: req.params.id,
+      orgId: authReq.orgId,
+    })
+      .populate('shippedBy', 'name email')
+      .populate('lines.productId', 'sku name unit')
+      .sort({ createdAt: -1 });
+
+    res.json(shipments);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
  * POST /sales-orders/:id/transition - Transition sales order status
  */
 router.post(
