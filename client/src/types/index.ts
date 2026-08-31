@@ -62,3 +62,29 @@ export interface StockBalance {
   warehouseId: string;
   balance: number;
 }
+
+export interface Warehouse {
+  _id: string;
+  name: string;
+  address?: string;
+  isActive: boolean;
+  binCount?: number;
+  createdAt: string;
+}
+
+export interface Bin {
+  _id: string;
+  orgId: string;
+  warehouseId: string;
+  code: string;
+  zone?: string;
+  createdAt: string;
+}
+
+export interface Organization {
+  _id: string;
+  name: string;
+  slug: string;
+  poApprovalThreshold: number;
+  createdAt: string;
+}

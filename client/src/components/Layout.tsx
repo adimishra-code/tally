@@ -32,11 +32,13 @@ export default function Layout() {
     { path: '/', label: 'Dashboard', icon: '📊' },
     { path: '/inventory', label: 'Inventory', icon: '📦' },
     { path: '/products', label: 'Products', icon: '🏷️' },
+    { path: '/warehouses', label: 'Warehouses', icon: '🏢' },
     { path: '/purchase-orders', label: 'Purchase Orders', icon: '📥' },
     { path: '/sales-orders', label: 'Sales Orders', icon: '📤' },
     { path: '/alerts', label: 'Alerts', icon: '🔔', badge: activeAlerts.length },
     { path: '/audit', label: 'Audit Log', icon: '📋' },
     { path: '/users', label: 'Users', icon: '👥' },
+    { path: '/settings', label: 'Settings', icon: '⚙️' },
   ];
 
   return (
