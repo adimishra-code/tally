@@ -2,10 +2,14 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
+import ReceiveGoodsModal from '../components/ReceiveGoodsModal';
+import BarcodeScannerModal from '../components/BarcodeScannerModal';
 
 export default function PurchaseOrders() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [receivingPo, setReceivingPo] = useState<any | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [formData, setFormData] = useState({
     supplierName: '',
@@ -120,26 +124,38 @@ export default function PurchaseOrders() {
       PENDING_APPROVAL: ['APPROVED', 'REJECTED', 'CANCELLED'],
       APPROVED: ['SENT', 'CANCELLED'],
       REJECTED: ['DRAFT'],
-      SENT: ['PARTIALLY_RECEIVED', 'RECEIVED', 'CANCELLED'],
-      PARTIALLY_RECEIVED: ['RECEIVED', 'CLOSED'],
+      SENT: ['CANCELLED'],
+      PARTIALLY_RECEIVED: ['CLOSED'],
       RECEIVED: ['CLOSED'],
     };
     return actions[status] || [];
   };
 
+  const canReceiveGoods = (status: string) => {
+    return ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED'].includes(status);
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Purchase Orders</h2>
-          <p className="text-gray-600">Manage inbound purchase orders</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">Purchase Orders</h2>
+          <p className="text-gray-600">Inbound procurement and stock receiving</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {showForm ? 'Cancel' : '+ New Purchase Order'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowScanner(true)}
+            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
+          >
+            <span>⚡</span> Scan SKU / Barcode
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            {showForm ? 'Cancel' : '+ New Purchase Order'}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -308,26 +324,50 @@ export default function PurchaseOrders() {
                   </div>
 
                   {/* Actions */}
-                  {getNextActions(po.status).length > 0 && (
-                    <div className="flex gap-2 flex-wrap">
-                      {getNextActions(po.status).map((action) => (
-                        <button
-                          key={action}
-                          onClick={() => transitionMutation.mutate({ id: po._id, nextStatus: action })}
-                          disabled={transitionMutation.isPending}
-                          className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
-                        >
-                          {action.replace(/_/g, ' ')}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex gap-2 flex-wrap items-center">
+                    {canReceiveGoods(po.status) && (
+                      <button
+                        onClick={() => setReceivingPo(po)}
+                        className="px-3.5 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                      >
+                        <span>📥</span> Receive Goods
+                      </button>
+                    )}
+                    {getNextActions(po.status).map((action) => (
+                      <button
+                        key={action}
+                        onClick={() => transitionMutation.mutate({ id: po._id, nextStatus: action })}
+                        disabled={transitionMutation.isPending}
+                        className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      >
+                        {action.replace(/_/g, ' ')}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Goods Receiving Modal */}
+      {receivingPo && (
+        <ReceiveGoodsModal
+          po={receivingPo}
+          onClose={() => setReceivingPo(null)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
+            queryClient.invalidateQueries({ queryKey: ['alerts'] });
+          }}
+        />
+      )}
+
+      {/* Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScannerModal onClose={() => setShowScanner(false)} />
+      )}
     </div>
   );
 }
