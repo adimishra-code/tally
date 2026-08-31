@@ -13,6 +13,13 @@ export default function Users() {
     role: 'WAREHOUSE_STAFF',
   });
 
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    role: 'WAREHOUSE_STAFF',
+    isActive: true,
+  });
+
   const { data: users, isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
@@ -39,6 +46,7 @@ export default function Users() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('User updated successfully');
+      setEditingUser(null);
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to update user');
@@ -59,6 +67,21 @@ export default function Users() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createMutation.mutate(formData);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    updateMutation.mutate({ id: editingUser._id, data: editFormData });
+  };
+
+  const startEdit = (user: any) => {
+    setEditingUser(user);
+    setEditFormData({
+      name: user.name,
+      role: user.role,
+      isActive: user.isActive,
+    });
   };
 
   const getRoleBadge = (role: string) => {
@@ -199,18 +222,26 @@ export default function Users() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {user.isActive && (
+                      <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => {
-                            if (confirm('Are you sure you want to deactivate this user?')) {
-                              deactivateMutation.mutate(user._id);
-                            }
-                          }}
-                          className="text-sm text-red-600 hover:text-red-700 font-medium"
+                          onClick={() => startEdit(user)}
+                          className="text-sm text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                         >
-                          Deactivate
+                          Edit
                         </button>
-                      )}
+                        {user.isActive && (
+                          <button
+                            onClick={() => {
+                              if (confirm('Are you sure you want to deactivate this user?')) {
+                                deactivateMutation.mutate(user._id);
+                              }
+                            }}
+                            className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                          >
+                            Deactivate
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -219,6 +250,78 @@ export default function Users() {
           </table>
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <h3 className="text-lg font-bold text-gray-900">Edit User</h3>
+              <button
+                onClick={() => setEditingUser(null)}
+                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name*</label>
+                <input
+                  type="text"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role*</label>
+                <select
+                  value={editFormData.role}
+                  onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="OWNER">Owner</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="PROCUREMENT">Procurement</option>
+                  <option value="WAREHOUSE_STAFF">Warehouse Staff</option>
+                  <option value="FINANCE">Finance</option>
+                  <option value="VIEWER">Viewer</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isActiveToggle"
+                  checked={editFormData.isActive}
+                  onChange={(e) => setEditFormData({ ...editFormData, isActive: e.target.checked })}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                />
+                <label htmlFor="isActiveToggle" className="text-sm font-medium text-gray-700">
+                  Active Account
+                </label>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateMutation.isPending}
+                  className="flex-1 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
