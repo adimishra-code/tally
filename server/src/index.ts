@@ -1,13 +1,16 @@
+import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
+import { initSocket } from './utils/socket';
 import authRoutes from './routes/auth.routes';
 
 dotenv.config();
 
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
@@ -66,11 +69,14 @@ const start = async () => {
   try {
     await connectDB();
 
+    // Initialize Socket.IO
+    initSocket(httpServer);
+
     // Start background jobs
     const { startAllJobs } = await import('./jobs');
     await startAllJobs();
 
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     });

@@ -4,6 +4,7 @@ import { Product } from '../models/Product';
 import { Warehouse } from '../models/Warehouse';
 import { StockLedgerService } from '../services/StockLedgerService';
 import { Alert, AlertType, AlertStatus } from '../models/Alert';
+import { broadcastAlert } from '../utils/socket';
 
 export const lowStockQueue = new Queue('low-stock-check', { connection });
 
@@ -39,7 +40,7 @@ export const startLowStockWorker = () => {
             });
 
             if (!existingAlert) {
-              await Alert.create({
+              const alert = await Alert.create({
                 orgId: product.orgId,
                 type: AlertType.LOW_STOCK,
                 severity: balance === 0 ? 'high' : 'medium',
@@ -55,6 +56,7 @@ export const startLowStockWorker = () => {
                   reorderQty: product.reorderQty,
                 },
               });
+              broadcastAlert(product.orgId.toString(), alert);
               alertsCreated++;
             }
           }

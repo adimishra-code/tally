@@ -2,6 +2,7 @@ import { Types, ClientSession } from 'mongoose';
 import { SalesOrder, ISalesOrder } from '../models/SalesOrder';
 import { AuditLog } from '../models/AuditLog';
 import { SalesOrderStatus, SO_TRANSITIONS } from '../types/enums';
+import { broadcastOrderUpdate } from '../utils/socket';
 
 interface CreateSOParams {
   orgId: Types.ObjectId;
@@ -37,6 +38,13 @@ export class SalesOrderService {
 
     await this.logAudit(orgId, createdBy, 'SO_CREATED', so._id, {}, { status: so.status });
 
+    broadcastOrderUpdate(orgId.toString(), {
+      type: 'SO',
+      orderId: so._id.toString(),
+      status: so.status,
+      orderNumber: so.orderNumber,
+    });
+
     return so;
   }
 
@@ -65,6 +73,13 @@ export class SalesOrderService {
 
     await this.logAudit(so.orgId, userId, 'SO_TRANSITION', so._id, { status: currentStatus }, { status: nextStatus });
 
+    broadcastOrderUpdate(so.orgId.toString(), {
+      type: 'SO',
+      orderId: so._id.toString(),
+      status: nextStatus,
+      orderNumber: so.orderNumber,
+    });
+
     return updated;
   }
 
@@ -90,6 +105,13 @@ export class SalesOrderService {
     line.pickedQty += pickedQty;
 
     await SalesOrder.updateOne({ _id: soId }, { $set: { lines: so.lines } }, { session });
+
+    broadcastOrderUpdate(so.orgId.toString(), {
+      type: 'SO',
+      orderId: so._id.toString(),
+      status: so.status,
+      orderNumber: so.orderNumber,
+    });
   }
 
   /**
@@ -125,6 +147,13 @@ export class SalesOrderService {
     }
 
     await SalesOrder.updateOne({ _id: soId }, { $set: { lines: so.lines, status: newStatus } }, { session });
+
+    broadcastOrderUpdate(so.orgId.toString(), {
+      type: 'SO',
+      orderId: so._id.toString(),
+      status: newStatus,
+      orderNumber: so.orderNumber,
+    });
   }
 
   /**

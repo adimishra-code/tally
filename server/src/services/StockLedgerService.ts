@@ -1,6 +1,7 @@
 import { ClientSession, Types } from 'mongoose';
 import { StockLedgerEntry } from '../models/StockLedgerEntry';
 import { LedgerEntryType } from '../types/enums';
+import { broadcastStockUpdate } from '../utils/socket';
 
 interface RecordEntryParams {
   orgId: Types.ObjectId;
@@ -73,6 +74,13 @@ export class StockLedgerService {
       ],
       { session }
     );
+
+    // Broadcast real-time stock balance change
+    broadcastStockUpdate(orgId.toString(), {
+      productId: productId.toString(),
+      warehouseId: warehouseId.toString(),
+      newBalance: balanceAfter,
+    });
   }
 
   /**

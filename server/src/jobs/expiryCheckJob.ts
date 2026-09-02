@@ -2,6 +2,7 @@ import { Queue, Worker } from 'bullmq';
 import { connection } from '../config/redis';
 import { StockLedgerEntry } from '../models/StockLedgerEntry';
 import { Alert, AlertType, AlertStatus } from '../models/Alert';
+import { broadcastAlert } from '../utils/socket';
 
 export const expiryCheckQueue = new Queue('expiry-check', { connection });
 
@@ -40,7 +41,7 @@ export const startExpiryCheckWorker = () => {
             (entry.expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
           );
 
-          await Alert.create({
+          const alert = await Alert.create({
             orgId: entry.orgId,
             type: AlertType.EXPIRY_WARNING,
             severity: daysUntilExpiry <= 7 ? 'high' : daysUntilExpiry <= 14 ? 'medium' : 'low',
@@ -56,6 +57,7 @@ export const startExpiryCheckWorker = () => {
               daysUntilExpiry,
             },
           });
+          broadcastAlert(entry.orgId.toString(), alert);
           alertsCreated++;
         }
       }

@@ -3,6 +3,7 @@ import { connection } from '../config/redis';
 import { SalesOrder } from '../models/SalesOrder';
 import { SalesOrderStatus } from '../types/enums';
 import { Alert, AlertType, AlertStatus } from '../models/Alert';
+import { broadcastAlert } from '../utils/socket';
 
 export const slaCheckQueue = new Queue('sla-check', { connection });
 
@@ -37,7 +38,7 @@ export const startSlaCheckWorker = () => {
         if (!existingAlert) {
           const hoursOverdue = Math.floor((Date.now() - order.createdAt.getTime()) / (1000 * 60 * 60)) - SLA_HOURS;
 
-          await Alert.create({
+          const alert = await Alert.create({
             orgId: order.orgId,
             type: AlertType.SLA_BREACH,
             severity: hoursOverdue >= 24 ? 'high' : 'medium',
@@ -54,6 +55,7 @@ export const startSlaCheckWorker = () => {
               slaHours: SLA_HOURS,
             },
           });
+          broadcastAlert(order.orgId.toString(), alert);
           alertsCreated++;
         }
       }

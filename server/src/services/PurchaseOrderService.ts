@@ -3,6 +3,7 @@ import { PurchaseOrder, IPurchaseOrder } from '../models/PurchaseOrder';
 import { Organization } from '../models/Organization';
 import { AuditLog } from '../models/AuditLog';
 import { PurchaseOrderStatus, PO_TRANSITIONS, Role } from '../types/enums';
+import { broadcastOrderUpdate } from '../utils/socket';
 
 interface CreatePOParams {
   orgId: Types.ObjectId;
@@ -38,13 +39,23 @@ export class PurchaseOrderService {
       poNumber,
       supplierName,
       warehouseId,
-      lines,
+      status: PurchaseOrderStatus.DRAFT,
+      lines: lines.map((line) => ({
+        ...line,
+        receivedQty: 0,
+      })),
       requiresApprovalAbove: org.poApprovalThreshold,
       createdBy,
-      status: PurchaseOrderStatus.DRAFT,
     });
 
-    await this.logAudit(orgId, createdBy, 'PO_CREATED', po._id, {}, { status: po.status });
+    await this.logAudit(orgId, createdBy, 'PO_CREATED', po._id, {}, { poNumber, status: po.status });
+
+    broadcastOrderUpdate(orgId.toString(), {
+      type: 'PO',
+      orderId: po._id.toString(),
+      status: po.status,
+      orderNumber: po.poNumber,
+    });
 
     return po;
   }
@@ -56,15 +67,14 @@ export class PurchaseOrderService {
     po: IPurchaseOrder,
     nextStatus: PurchaseOrderStatus,
     userId: Types.ObjectId,
-    userRole: Role
+    userRole?: Role
   ): Promise<IPurchaseOrder> {
     const currentStatus = po.status;
+    const allowed = PO_TRANSITIONS[currentStatus];
 
     // Check if transition is valid
-    if (!PO_TRANSITIONS[currentStatus].includes(nextStatus)) {
-      throw new Error(
-        `Invalid transition from ${currentStatus} to ${nextStatus}. Allowed: ${PO_TRANSITIONS[currentStatus].join(', ')}`
-      );
+    if (!allowed || !allowed.includes(nextStatus)) {
+      throw new Error(`Invalid transition from ${currentStatus} to ${nextStatus}`);
     }
 
     // Special logic: DRAFT → PENDING_APPROVAL
@@ -75,7 +85,7 @@ export class PurchaseOrderService {
       // If under threshold and user has PROCUREMENT+ role, skip straight to APPROVED
       if (
         totalValue <= po.requiresApprovalAbove &&
-        [Role.OWNER, Role.ADMIN, Role.PROCUREMENT].includes(userRole)
+        (userRole === Role.OWNER || userRole === Role.ADMIN || userRole === Role.PROCUREMENT)
       ) {
         po.status = PurchaseOrderStatus.APPROVED;
         po.approvedBy = userId;
@@ -100,6 +110,13 @@ export class PurchaseOrderService {
     }
 
     await this.logAudit(po.orgId, userId, 'PO_TRANSITION', po._id, { status: currentStatus }, { status: po.status });
+
+    broadcastOrderUpdate(po.orgId.toString(), {
+      type: 'PO',
+      orderId: po._id.toString(),
+      status: po.status,
+      orderNumber: po.poNumber,
+    });
 
     return updated;
   }
@@ -143,6 +160,13 @@ export class PurchaseOrderService {
     }
 
     await PurchaseOrder.updateOne({ _id: poId }, { $set: { lines: po.lines, status: po.status } }, { session });
+
+    broadcastOrderUpdate(po.orgId.toString(), {
+      type: 'PO',
+      orderId: po._id.toString(),
+      status: po.status,
+      orderNumber: po.poNumber,
+    });
   }
 
   /**
