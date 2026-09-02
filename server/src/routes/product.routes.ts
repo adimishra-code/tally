@@ -198,6 +198,117 @@ router.delete(
 );
 
 /**
+ * GET /products/export/csv - Export product catalog to CSV
+ */
+router.get('/export/csv', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const products = await Product.find({ orgId: authReq.orgId }).sort({ sku: 1 });
+
+    const headers = ['SKU', 'Name', 'Description', 'Unit', 'Cost Price', 'Sell Price', 'Reorder Point', 'Reorder Qty', 'Active'];
+    const rows = products.map((p) => [
+      `"${p.sku.replace(/"/g, '""')}"`,
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${(p.description || '').replace(/"/g, '""')}"`,
+      `"${p.unit}"`,
+      p.costPrice,
+      p.sellPrice,
+      p.reorderPoint,
+      p.reorderQty,
+      p.isActive ? 'true' : 'false',
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="products_export.csv"');
+    res.send(csvContent);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * POST /products/import/csv - Bulk import products
+ */
+router.post(
+  '/import/csv',
+  requireAuth,
+  requireRole(Role.OWNER, Role.ADMIN, Role.PROCUREMENT),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authReq = req as AuthRequest;
+      const items = z.array(createProductSchema).min(1).parse(req.body);
+
+      let created = 0;
+      let skipped = 0;
+
+      for (const item of items) {
+        const existing = await Product.findOne({
+          orgId: authReq.orgId,
+          sku: item.sku.toUpperCase(),
+        });
+
+        if (existing) {
+          skipped++;
+        } else {
+          await Product.create({
+            orgId: authReq.orgId,
+            ...item,
+            sku: item.sku.toUpperCase(),
+          });
+          created++;
+        }
+      }
+
+      res.json({
+        message: `Imported ${created} product(s), skipped ${skipped} existing.`,
+        created,
+        skipped,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Validation failed', details: error.errors });
+        return;
+      }
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+/**
+ * PATCH /products/:id/toggle-active - Toggle active/inactive status
+ */
+router.patch(
+  '/:id/toggle-active',
+  requireAuth,
+  requireRole(Role.OWNER, Role.ADMIN, Role.PROCUREMENT),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authReq = req as AuthRequest;
+
+      if (!Types.ObjectId.isValid(req.params.id)) {
+        res.status(400).json({ error: 'Invalid product ID' });
+        return;
+      }
+
+      const product = await Product.findOne({ _id: req.params.id, orgId: authReq.orgId });
+      if (!product) {
+        res.status(404).json({ error: 'Product not found' });
+        return;
+      }
+
+      product.isActive = !product.isActive;
+      await product.save();
+
+      res.json({ message: `Product ${product.isActive ? 'activated' : 'deactivated'}`, product });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+/**
  * GET /products/sku/:sku - Lookup by SKU (for barcode scanning)
  */
 router.get('/sku/:sku', requireAuth, async (req: Request, res: Response): Promise<void> => {
