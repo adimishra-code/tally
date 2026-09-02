@@ -51,6 +51,8 @@ import binRoutes from './routes/bin.routes';
 app.use('/api/bins', binRoutes);
 import organizationRoutes from './routes/organization.routes';
 app.use('/api/organization', organizationRoutes);
+import dashboardRoutes from './routes/dashboard.routes';
+app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling middleware
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
