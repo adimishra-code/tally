@@ -11,6 +11,10 @@ export default function Warehouses() {
   const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(null);
   const [showAddBin, setShowAddBin] = useState(false);
 
+  const [warehouseSearch, setWarehouseSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  const [binSearch, setBinSearch] = useState('');
+
   const [warehouseForm, setWarehouseForm] = useState({ name: '', address: '' });
   const [editWarehouseForm, setEditWarehouseForm] = useState({ name: '', address: '', isActive: true });
   const [binForm, setBinForm] = useState({ code: '', zone: '' });
@@ -34,6 +38,28 @@ export default function Warehouses() {
     },
     enabled: !!selectedWarehouse,
   });
+
+  const filteredWarehouses = (warehouses || []).filter((wh) => {
+    if (warehouseSearch.trim()) {
+      const q = warehouseSearch.toLowerCase();
+      const matchesName = wh.name?.toLowerCase().includes(q);
+      const matchesAddress = wh.address?.toLowerCase().includes(q);
+      if (!matchesName && !matchesAddress) return false;
+    }
+    if (statusFilter === 'ACTIVE') return wh.isActive;
+    if (statusFilter === 'INACTIVE') return !wh.isActive;
+    return true;
+  });
+
+  const filteredBins = (bins || []).filter((b) => {
+    if (!binSearch.trim()) return true;
+    const q = binSearch.toLowerCase();
+    return b.code?.toLowerCase().includes(q) || (b.zone && b.zone.toLowerCase().includes(q));
+  });
+
+  const totalWarehouses = warehouses?.length || 0;
+  const activeCount = warehouses?.filter((w) => w.isActive).length || 0;
+  const inactiveCount = warehouses?.filter((w) => !w.isActive).length || 0;
 
   // Mutations
   const createWarehouseMutation = useMutation({
@@ -135,16 +161,86 @@ export default function Warehouses() {
         </button>
       </div>
 
+      {/* KPI Metrics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Warehouses</div>
+          <div className="text-2xl font-bold text-gray-900">{totalWarehouses}</div>
+          <div className="text-xs text-gray-400 mt-1">Configured facilities</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Active Locations</div>
+          <div className="text-2xl font-bold text-green-600">{activeCount}</div>
+          <div className="text-xs text-gray-400 mt-1">Operational facilities</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Inactive Locations</div>
+          <div className="text-2xl font-bold text-gray-500">{inactiveCount}</div>
+          <div className="text-xs text-gray-400 mt-1">Decommissioned / draft</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Selected Facility Bins</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {selectedWarehouse ? bins?.length ?? 0 : 'None'}
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
+            {selectedWarehouse ? selectedWarehouse.name : 'Click card below to select'}
+          </div>
+        </div>
+      </div>
+
+      {/* Warehouse Search & Status Filter */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <span className="absolute left-3.5 top-2.5 text-gray-400">🔍</span>
+          <input
+            type="text"
+            placeholder="Search warehouses by name or address..."
+            value={warehouseSearch}
+            onChange={(e) => setWarehouseSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+          />
+        </div>
+        <div className="flex items-center bg-gray-100 p-1 rounded-lg text-xs font-medium w-full md:w-auto">
+          <button
+            onClick={() => setStatusFilter('ALL')}
+            className={`px-3 py-1.5 rounded-md transition-colors ${
+              statusFilter === 'ALL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            All ({totalWarehouses})
+          </button>
+          <button
+            onClick={() => setStatusFilter('ACTIVE')}
+            className={`px-3 py-1.5 rounded-md transition-colors ${
+              statusFilter === 'ACTIVE' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Active ({activeCount})
+          </button>
+          <button
+            onClick={() => setStatusFilter('INACTIVE')}
+            className={`px-3 py-1.5 rounded-md transition-colors ${
+              statusFilter === 'INACTIVE' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Inactive ({inactiveCount})
+          </button>
+        </div>
+      </div>
+
       {/* Warehouse Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading ? (
           <div className="col-span-full py-12 text-center text-gray-500">Loading warehouses...</div>
-        ) : !warehouses || warehouses.length === 0 ? (
+        ) : filteredWarehouses.length === 0 ? (
           <div className="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center text-gray-500">
-            No warehouses found. Click "+ Add Warehouse" to create one.
+            {warehouseSearch || statusFilter !== 'ALL'
+              ? 'No warehouses match the search or filter criteria.'
+              : 'No warehouses found. Click "+ Add Warehouse" to create one.'}
           </div>
         ) : (
-          warehouses.map((wh) => {
+          filteredWarehouses.map((wh) => {
             const isSelected = selectedWarehouse?._id === wh._id;
             return (
               <div
@@ -224,7 +320,7 @@ export default function Warehouses() {
       {/* Selected Warehouse Bin Location Explorer */}
       {selectedWarehouse && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 gap-3">
             <div>
               <h3 className="text-xl font-bold text-gray-900">
                 Bin Locations in <span className="text-blue-600">{selectedWarehouse.name}</span>
@@ -233,23 +329,35 @@ export default function Warehouses() {
                 Organize inventory by aisle, rack, and shelf (e.g., A-01-02)
               </p>
             </div>
-            <button
-              onClick={() => setShowAddBin(true)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              + Add Bin Location
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="relative w-44">
+                <span className="absolute left-2.5 top-2 text-gray-400 text-xs">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Filter bins..."
+                  value={binSearch}
+                  onChange={(e) => setBinSearch(e.target.value)}
+                  className="w-full pl-7 pr-3 py-1.5 border border-gray-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                onClick={() => setShowAddBin(true)}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+              >
+                + Add Bin
+              </button>
+            </div>
           </div>
 
           {isLoadingBins ? (
             <div className="py-8 text-center text-gray-500">Loading bins...</div>
-          ) : !bins || bins.length === 0 ? (
+          ) : filteredBins.length === 0 ? (
             <div className="py-8 text-center text-gray-500 bg-gray-50 rounded-lg">
-              No specific bins registered in this warehouse yet.
+              {binSearch ? 'No bins match your filter.' : 'No specific bins registered in this warehouse yet.'}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {bins.map((bin) => (
+              {filteredBins.map((bin) => (
                 <div
                   key={bin._id}
                   className="bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between hover:border-blue-300 transition-colors"

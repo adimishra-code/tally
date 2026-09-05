@@ -94,12 +94,12 @@ router.post(
 );
 
 /**
- * GET /sales-orders - List sales orders
+ * GET /sales-orders/export/csv - Export sales orders as CSV
  */
-router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get('/export/csv', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const authReq = req as AuthRequest;
-    const { status, warehouseId } = req.query;
+    const { status, warehouseId, search } = req.query;
 
     const filter: any = { orgId: authReq.orgId };
 
@@ -111,10 +111,94 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       filter.warehouseId = new Types.ObjectId(warehouseId);
     }
 
+    if (search && typeof search === 'string') {
+      filter.$or = [
+        { orderNumber: { $regex: search, $options: 'i' } },
+        { customerName: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const sos = await SalesOrder.find(filter)
+      .sort({ createdAt: -1 })
+      .populate('warehouseId', 'name')
+      .populate('createdBy', 'name email');
+
+    const headers = [
+      'Order Number',
+      'Customer',
+      'Warehouse',
+      'Status',
+      'Lines Count',
+      'Total Items Ordered',
+      'Total Items Picked',
+      'Total Items Shipped',
+      'Created By',
+      'Created At',
+    ];
+
+    const rows = sos.map((so: any) => {
+      const linesCount = so.lines?.length || 0;
+      const totalOrdered = so.lines?.reduce((sum: number, l: any) => sum + (l.orderedQty || 0), 0) || 0;
+      const totalPicked = so.lines?.reduce((sum: number, l: any) => sum + (l.pickedQty || 0), 0) || 0;
+      const totalShipped = so.lines?.reduce((sum: number, l: any) => sum + (l.shippedQty || 0), 0) || 0;
+
+      return [
+        `"${so.orderNumber || ''}"`,
+        `"${(so.customerName || '').replace(/"/g, '""')}"`,
+        `"${so.warehouseId?.name || ''}"`,
+        `"${so.status || ''}"`,
+        linesCount,
+        totalOrdered,
+        totalPicked,
+        totalShipped,
+        `"${so.createdBy?.name || so.createdBy?.email || ''}"`,
+        `"${new Date(so.createdAt).toISOString()}"`,
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=sales_orders_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    res.status(200).send(csvContent);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /sales-orders - List sales orders
+ */
+router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const { status, warehouseId, search } = req.query;
+
+    const filter: any = { orgId: authReq.orgId };
+
+    if (status && typeof status === 'string') {
+      filter.status = status;
+    }
+
+    if (warehouseId && typeof warehouseId === 'string' && Types.ObjectId.isValid(warehouseId)) {
+      filter.warehouseId = new Types.ObjectId(warehouseId);
+    }
+
+    if (search && typeof search === 'string') {
+      filter.$or = [
+        { orderNumber: { $regex: search, $options: 'i' } },
+        { customerName: { $regex: search, $options: 'i' } },
+      ];
+    }
+
     const sos = await SalesOrder.find(filter)
       .sort({ createdAt: -1 })
       .populate('createdBy', 'name email')
-      .populate('warehouseId', 'name');
+      .populate('warehouseId', 'name')
+      .populate('lines.productId', 'sku name unit');
 
     res.json(sos);
   } catch (error) {

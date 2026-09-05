@@ -9,6 +9,7 @@ export default function SalesOrders() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState('');
   const [pickingSo, setPickingSo] = useState<any | null>(null);
   const [shippingSo, setShippingSo] = useState<any | null>(null);
   const [viewingShipmentsSo, setViewingShipmentsSo] = useState<any | null>(null);
@@ -20,9 +21,12 @@ export default function SalesOrders() {
   });
 
   const { data: sos, isLoading } = useQuery({
-    queryKey: ['sales-orders', statusFilter],
+    queryKey: ['sales-orders', statusFilter, search],
     queryFn: async () => {
-      const { data } = await api.get(`/sales-orders${statusFilter ? `?status=${statusFilter}` : ''}`);
+      const params = new URLSearchParams();
+      if (statusFilter) params.append('status', statusFilter);
+      if (search) params.append('search', search);
+      const { data } = await api.get(`/sales-orders?${params.toString()}`);
       return data;
     },
   });
@@ -42,6 +46,40 @@ export default function SalesOrders() {
       return data;
     },
   });
+
+  const handleExportCsv = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter) params.append('status', statusFilter);
+      if (search) params.append('search', search);
+
+      const response = await api.get(`/sales-orders/export/csv?${params.toString()}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `sales_orders_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Sales orders exported to CSV');
+    } catch {
+      toast.error('Failed to export sales orders');
+    }
+  };
+
+  const totalOrders = sos?.length || 0;
+  const totalUnitsOrdered =
+    sos?.reduce(
+      (sum: number, so: any) =>
+        sum + (so.lines?.reduce((lSum: number, l: any) => lSum + (l.orderedQty || 0), 0) || 0),
+      0
+    ) || 0;
+  const needsActionCount =
+    sos?.filter((so: any) => ['DRAFT', 'CONFIRMED', 'PICKING', 'PACKED'].includes(so.status)).length || 0;
+  const inTransitOrDelivered =
+    sos?.filter((so: any) => ['SHIPPED', 'PARTIALLY_SHIPPED', 'DELIVERED'].includes(so.status)).length || 0;
 
   // Query shipments for selected order
   const { data: shipments, isLoading: isLoadingShipments } = useQuery({
@@ -152,32 +190,77 @@ export default function SalesOrders() {
           <h2 className="text-3xl font-bold text-gray-900 mb-1">Sales Orders</h2>
           <p className="text-gray-600">Outbound customer fulfillment and shipments</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          {showForm ? 'Cancel' : '+ New Sales Order'}
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {sos && sos.length > 0 && (
+            <button
+              onClick={handleExportCsv}
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-1.5"
+            >
+              <span>📥</span> Export CSV
+            </button>
+          )}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm"
+          >
+            {showForm ? 'Cancel' : '+ New Sales Order'}
+          </button>
+        </div>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Fulfillment Status</label>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-        >
-          <option value="">All Statuses</option>
-          <option value="DRAFT">Draft</option>
-          <option value="CONFIRMED">Confirmed</option>
-          <option value="PICKING">Picking</option>
-          <option value="PACKED">Packed</option>
-          <option value="PARTIALLY_SHIPPED">Partially Shipped</option>
-          <option value="SHIPPED">Shipped</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
+      {/* KPI Metrics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Sales Orders</div>
+          <div className="text-2xl font-bold text-gray-900">{totalOrders}</div>
+          <div className="text-xs text-gray-400 mt-1">Orders placed to date</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Units Ordered</div>
+          <div className="text-2xl font-bold text-blue-600">{totalUnitsOrdered.toLocaleString()}</div>
+          <div className="text-xs text-gray-400 mt-1">Aggregated line demand</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Needs Fulfillment</div>
+          <div className="text-2xl font-bold text-amber-600">{needsActionCount}</div>
+          <div className="text-xs text-gray-400 mt-1">Draft, Confirmed, Picking, Packed</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Dispatched / Done</div>
+          <div className="text-2xl font-bold text-emerald-600">{inTransitOrDelivered}</div>
+          <div className="text-xs text-gray-400 mt-1">Shipped & Delivered</div>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <span className="absolute left-3.5 top-2.5 text-gray-400">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by Order # or Customer name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+          />
+        </div>
+        <div className="w-full md:w-auto">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium bg-white text-gray-700"
+          >
+            <option value="">All Fulfillment Statuses</option>
+            <option value="DRAFT">Draft</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="PICKING">Picking</option>
+            <option value="PACKED">Packed</option>
+            <option value="PARTIALLY_SHIPPED">Partially Shipped</option>
+            <option value="SHIPPED">Shipped</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
       </div>
 
       {/* Create Form */}
@@ -314,7 +397,9 @@ export default function SalesOrders() {
                     {so.lines.map((line: any, idx: number) => (
                       <div key={idx} className="text-xs text-gray-700 flex items-center justify-between">
                         <div>
-                          • <span className="font-semibold">{line.orderedQty}×</span> {line.productId?.name || 'Product'}
+                          • <span className="font-semibold">{line.orderedQty}×</span>{' '}
+                          {line.productId?.sku ? <span className="font-mono text-gray-500 font-semibold">{line.productId.sku} - </span> : null}
+                          {line.productId?.name || 'Product'}
                         </div>
                         <div className="flex gap-3 text-gray-500">
                           <span>Picked: <strong className="text-gray-800">{line.pickedQty || 0}</strong></span>
