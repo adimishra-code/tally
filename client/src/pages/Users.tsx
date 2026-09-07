@@ -6,6 +6,9 @@ import api from '../lib/api';
 export default function Users() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,6 +21,7 @@ export default function Users() {
     name: '',
     role: 'WAREHOUSE_STAFF',
     isActive: true,
+    password: '',
   });
 
   const { data: users, isLoading } = useQuery({
@@ -27,6 +31,47 @@ export default function Users() {
       return data;
     },
   });
+
+  const filteredUsers = (users || []).filter((user: any) => {
+    if (roleFilter !== 'ALL' && user.role !== roleFilter) return false;
+    if (statusFilter === 'ACTIVE' && !user.isActive) return false;
+    if (statusFilter === 'INACTIVE' && user.isActive) return false;
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      const matchName = user.name?.toLowerCase().includes(q);
+      const matchEmail = user.email?.toLowerCase().includes(q);
+      if (!matchName && !matchEmail) return false;
+    }
+    return true;
+  });
+
+  const totalUsers = users?.length || 0;
+  const activeCount = users?.filter((u: any) => u.isActive).length || 0;
+  const adminCount = users?.filter((u: any) => u.role === 'ADMIN' || u.role === 'OWNER').length || 0;
+  const staffCount = users?.filter((u: any) => u.role === 'WAREHOUSE_STAFF').length || 0;
+
+  const exportUsersCSV = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (roleFilter !== 'ALL') params.append('role', roleFilter);
+      if (statusFilter !== 'ALL') params.append('status', statusFilter);
+      if (searchTerm.trim()) params.append('search', searchTerm.trim());
+
+      const res = await api.get(`/users/export/csv?${params.toString()}`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Users exported to CSV');
+    } catch {
+      toast.error('Failed to export users');
+    }
+  };
 
   const createMutation = useMutation({
     mutationFn: (data: typeof formData) => api.post('/users', data),
@@ -72,7 +117,15 @@ export default function Users() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
-    updateMutation.mutate({ id: editingUser._id, data: editFormData });
+    const payload: any = {
+      name: editFormData.name,
+      role: editFormData.role,
+      isActive: editFormData.isActive,
+    };
+    if (editFormData.password.trim()) {
+      payload.password = editFormData.password.trim();
+    }
+    updateMutation.mutate({ id: editingUser._id, data: payload });
   };
 
   const startEdit = (user: any) => {
@@ -81,6 +134,7 @@ export default function Users() {
       name: user.name,
       role: user.role,
       isActive: user.isActive,
+      password: '',
     });
   };
 
@@ -98,17 +152,104 @@ export default function Users() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">User Management</h2>
-          <p className="text-gray-600">Manage team members and their permissions</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-1">User Management</h2>
+          <p className="text-gray-600 text-sm">Manage team members, roles, and security permissions</p>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {showForm ? 'Cancel' : '+ Add User'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={exportUsersCSV}
+            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
+          >
+            <span>📥</span> Export CSV
+          </button>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            {showForm ? 'Cancel' : '+ Add User'}
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Metrics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Users</div>
+          <div className="text-2xl font-bold text-gray-900">{totalUsers}</div>
+          <div className="text-xs text-gray-400 mt-1">Configured accounts</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Active Accounts</div>
+          <div className="text-2xl font-bold text-emerald-600">{activeCount}</div>
+          <div className="text-xs text-gray-400 mt-1">Authorized access</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Admins & Owners</div>
+          <div className="text-2xl font-bold text-blue-600">{adminCount}</div>
+          <div className="text-xs text-gray-400 mt-1">Privileged managers</div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Warehouse Staff</div>
+          <div className="text-2xl font-bold text-amber-600">{staffCount}</div>
+          <div className="text-xs text-gray-400 mt-1">Operations team</div>
+        </div>
+      </div>
+
+      {/* Search & Filter Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <span className="absolute left-3.5 top-2.5 text-gray-400">🔍</span>
+          <input
+            type="text"
+            placeholder="Search users by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="ALL">All Roles</option>
+            <option value="OWNER">Owner</option>
+            <option value="ADMIN">Admin</option>
+            <option value="PROCUREMENT">Procurement</option>
+            <option value="WAREHOUSE_STAFF">Warehouse Staff</option>
+            <option value="FINANCE">Finance</option>
+            <option value="VIEWER">Viewer</option>
+          </select>
+          <div className="flex items-center bg-gray-100 p-1 rounded-lg text-xs font-medium">
+            <button
+              onClick={() => setStatusFilter('ALL')}
+              className={`px-3 py-1.5 rounded-md transition-colors ${
+                statusFilter === 'ALL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              All ({totalUsers})
+            </button>
+            <button
+              onClick={() => setStatusFilter('ACTIVE')}
+              className={`px-3 py-1.5 rounded-md transition-colors ${
+                statusFilter === 'ACTIVE' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Active ({activeCount})
+            </button>
+            <button
+              onClick={() => setStatusFilter('INACTIVE')}
+              className={`px-3 py-1.5 rounded-md transition-colors ${
+                statusFilter === 'INACTIVE' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Inactive ({totalUsers - activeCount})
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Create Form */}
@@ -194,14 +335,16 @@ export default function Users() {
                     Loading users...
                   </td>
                 </tr>
-              ) : users?.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    No users found
+                    {searchTerm || roleFilter !== 'ALL' || statusFilter !== 'ALL'
+                      ? 'No users match your filters'
+                      : 'No users found'}
                   </td>
                 </tr>
               ) : (
-                users?.map((user: any) => (
+                filteredUsers.map((user: any) => (
                   <tr key={user._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">{user.name}</div>
@@ -289,6 +432,19 @@ export default function Users() {
                   <option value="FINANCE">Finance</option>
                   <option value="VIEWER">Viewer</option>
                 </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reset Password <span className="text-xs text-gray-400">(optional)</span>
+                </label>
+                <input
+                  type="password"
+                  placeholder="Leave empty to keep unchanged"
+                  value={editFormData.password}
+                  onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  minLength={8}
+                />
               </div>
               <div className="flex items-center gap-2">
                 <input

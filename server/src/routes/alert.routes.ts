@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { Alert, AlertStatus } from '../models/Alert';
+import { broadcastAlert } from '../utils/socket';
 
 const router = Router();
 
@@ -67,6 +68,8 @@ router.post('/:id/acknowledge', requireAuth, async (req: Request, res: Response)
       return;
     }
 
+    broadcastAlert(authReq.orgId.toString(), alert);
+
     res.json(alert);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
@@ -95,6 +98,8 @@ router.post('/:id/resolve', requireAuth, async (req: Request, res: Response): Pr
       res.status(404).json({ error: 'Alert not found' });
       return;
     }
+
+    broadcastAlert(authReq.orgId.toString(), alert);
 
     res.json(alert);
   } catch (error) {

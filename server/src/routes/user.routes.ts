@@ -19,6 +19,55 @@ const updateUserSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   role: z.nativeEnum(Role).optional(),
   isActive: z.boolean().optional(),
+  password: z.string().min(8).max(100).optional(),
+});
+
+/**
+ * GET /users/export/csv - Export users as CSV
+ */
+router.get('/export/csv', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const { role, status, search } = req.query;
+
+    const filter: any = { orgId: authReq.orgId };
+
+    if (role && typeof role === 'string' && role !== 'ALL') {
+      filter.role = role;
+    }
+
+    if (status === 'ACTIVE') {
+      filter.isActive = true;
+    } else if (status === 'INACTIVE') {
+      filter.isActive = false;
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      filter.$or = [
+        { name: { $regex: search.trim(), $options: 'i' } },
+        { email: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    const users = await User.find(filter).select('-passwordHash').sort({ createdAt: -1 });
+
+    const headers = ['Name', 'Email', 'Role', 'Status', 'Created At'];
+    const rows = users.map((u: any) => [
+      `"${(u.name || '').replace(/"/g, '""')}"`,
+      `"${(u.email || '').replace(/"/g, '""')}"`,
+      `"${u.role || ''}"`,
+      `"${u.isActive ? 'Active' : 'Inactive'}"`,
+      `"${u.createdAt ? new Date(u.createdAt).toISOString().split('T')[0] : ''}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="users.csv"');
+    res.send(csvContent);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 /**
@@ -82,13 +131,33 @@ router.post(
 );
 
 /**
- * GET /users - List all users in org
+ * GET /users - List all users in org with optional filters
  */
 router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const authReq = req as AuthRequest;
+    const { role, status, search } = req.query;
 
-    const users = await User.find({ orgId: authReq.orgId }).select('-passwordHash').sort({ createdAt: -1 });
+    const filter: any = { orgId: authReq.orgId };
+
+    if (role && typeof role === 'string' && role !== 'ALL') {
+      filter.role = role;
+    }
+
+    if (status === 'ACTIVE') {
+      filter.isActive = true;
+    } else if (status === 'INACTIVE') {
+      filter.isActive = false;
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      filter.$or = [
+        { name: { $regex: search.trim(), $options: 'i' } },
+        { email: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    const users = await User.find(filter).select('-passwordHash').sort({ createdAt: -1 });
 
     res.json(users);
   } catch (error) {
@@ -116,9 +185,17 @@ router.patch(
 
       const before = { name: user.name, role: user.role, isActive: user.isActive };
 
+      const updateData: any = {};
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.role !== undefined) updateData.role = data.role;
+      if (data.isActive !== undefined) updateData.isActive = data.isActive;
+      if (data.password) {
+        updateData.passwordHash = await bcrypt.hash(data.password, 12);
+      }
+
       const updated = await User.findOneAndUpdate(
         { _id: req.params.id, orgId: authReq.orgId },
-        { $set: data },
+        { $set: updateData },
         { new: true }
       ).select('-passwordHash');
 
@@ -134,13 +211,22 @@ router.patch(
         entityType: 'User',
         entityId: updated._id,
         before,
-        after: { name: updated.name, role: updated.role, isActive: updated.isActive },
+        after: {
+          name: updated.name,
+          role: updated.role,
+          isActive: updated.isActive,
+          passwordReset: !!data.password,
+        },
       });
 
       res.json(updated);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ error: 'Validation failed', details: error.errors });
+        return;
+      }
+      if (error instanceof Error) {
+        res.status(400).json({ error: error.message });
         return;
       }
       res.status(500).json({ error: 'Internal server error' });
