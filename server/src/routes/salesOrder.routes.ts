@@ -8,6 +8,7 @@ import { SalesOrder } from '../models/SalesOrder';
 import { SalesOrderService } from '../services/SalesOrderService';
 import { StockLedgerService } from '../services/StockLedgerService';
 import { Shipment } from '../models/Shipment';
+import { broadcastOrderUpdate } from '../utils/socket';
 
 const router = Router();
 
@@ -334,7 +335,7 @@ router.post(
         return;
       }
 
-      if (so.status !== SalesOrderStatus.CONFIRMED) {
+      if (so.status !== SalesOrderStatus.CONFIRMED && so.status !== SalesOrderStatus.PICKING) {
         await session.abortTransaction();
         res.status(400).json({ error: `Cannot pick order in ${so.status} status` });
         return;
@@ -372,12 +373,23 @@ router.post(
         await SalesOrderService.updatePickedQty(session, orderId, productId, line.pickedQty);
       }
 
-      // Transition to PICKING status
-      await SalesOrder.updateOne({ _id: orderId }, { $set: { status: SalesOrderStatus.PICKING } }, { session });
+      // Check if all lines are now fully picked
+      const updatedSo = await SalesOrder.findById(orderId).session(session);
+      const isFullyPicked = updatedSo?.lines?.every((l) => (l.pickedQty || 0) >= (l.orderedQty || 0));
+      const targetStatus = isFullyPicked ? SalesOrderStatus.PACKED : SalesOrderStatus.PICKING;
+
+      await SalesOrder.updateOne({ _id: orderId }, { $set: { status: targetStatus } }, { session });
 
       await session.commitTransaction();
 
-      res.json({ message: 'Items picked successfully' });
+      broadcastOrderUpdate(authReq.orgId.toString(), {
+        type: 'SO',
+        orderId: orderId.toString(),
+        status: targetStatus,
+        orderNumber: updatedSo?.orderNumber || so.orderNumber,
+      });
+
+      res.json({ message: 'Items picked successfully', status: targetStatus });
     } catch (error) {
       await session.abortTransaction();
 

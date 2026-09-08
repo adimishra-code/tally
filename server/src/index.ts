@@ -3,9 +3,23 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { connectDB } from './config/db';
 import { initSocket } from './utils/socket';
 import authRoutes from './routes/auth.routes';
+import testRoutes from './routes/test.routes';
+import productRoutes from './routes/product.routes';
+import stockRoutes from './routes/stock.routes';
+import purchaseOrderRoutes from './routes/purchaseOrder.routes';
+import receivingRoutes from './routes/receiving.routes';
+import salesOrderRoutes from './routes/salesOrder.routes';
+import alertRoutes from './routes/alert.routes';
+import auditRoutes from './routes/audit.routes';
+import warehouseRoutes from './routes/warehouse.routes';
+import userRoutes from './routes/user.routes';
+import binRoutes from './routes/bin.routes';
+import organizationRoutes from './routes/organization.routes';
+import dashboardRoutes from './routes/dashboard.routes';
 
 dotenv.config();
 
@@ -27,31 +41,18 @@ app.get('/health', (_req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-import testRoutes from './routes/test.routes';
 app.use('/api/test', testRoutes);
-import productRoutes from './routes/product.routes';
 app.use('/api/products', productRoutes);
-import stockRoutes from './routes/stock.routes';
 app.use('/api/stock', stockRoutes);
-import purchaseOrderRoutes from './routes/purchaseOrder.routes';
 app.use('/api/purchase-orders', purchaseOrderRoutes);
-import receivingRoutes from './routes/receiving.routes';
 app.use('/api/receiving', receivingRoutes);
-import salesOrderRoutes from './routes/salesOrder.routes';
 app.use('/api/sales-orders', salesOrderRoutes);
-import alertRoutes from './routes/alert.routes';
 app.use('/api/alerts', alertRoutes);
-import auditRoutes from './routes/audit.routes';
 app.use('/api/audit', auditRoutes);
-import warehouseRoutes from './routes/warehouse.routes';
 app.use('/api/warehouses', warehouseRoutes);
-import userRoutes from './routes/user.routes';
 app.use('/api/users', userRoutes);
-import binRoutes from './routes/bin.routes';
 app.use('/api/bins', binRoutes);
-import organizationRoutes from './routes/organization.routes';
 app.use('/api/organization', organizationRoutes);
-import dashboardRoutes from './routes/dashboard.routes';
 app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling middleware
@@ -82,6 +83,28 @@ const start = async () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
+
+    const shutdown = async (signal: string) => {
+      console.log(`\nReceived ${signal}. Gracefully shutting down...`);
+      httpServer.close(async () => {
+        try {
+          await mongoose.disconnect();
+          console.log('MongoDB disconnected.');
+          process.exit(0);
+        } catch (err) {
+          console.error('Error during shutdown:', err);
+          process.exit(1);
+        }
+      });
+
+      setTimeout(() => {
+        console.error('Forced shutdown after timeout.');
+        process.exit(1);
+      }, 10000);
+    };
+
+    process.on('SIGINT', () => shutdown('SIGINT'));
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);

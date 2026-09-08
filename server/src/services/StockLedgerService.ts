@@ -28,7 +28,7 @@ export class StockLedgerService {
    *
    * MUST be called inside a MongoDB session/transaction to prevent race conditions.
    */
-  static async record(session: ClientSession, params: RecordEntryParams): Promise<void> {
+  static async record(session: ClientSession | null, params: RecordEntryParams): Promise<void> {
     const {
       orgId,
       productId,
@@ -44,7 +44,7 @@ export class StockLedgerService {
     } = params;
 
     // Read current balance inside the session (critical for concurrency safety)
-    const currentBalance = await this.getBalance(orgId, productId, warehouseId, session);
+    const currentBalance = await this.getBalance(orgId, productId, warehouseId, session || undefined);
     const balanceAfter = currentBalance + quantityChange;
 
     // Prevent negative stock (business rule)
@@ -72,7 +72,7 @@ export class StockLedgerService {
           createdBy,
         },
       ],
-      { session }
+      session ? { session } : undefined
     );
 
     // Broadcast real-time stock balance change
@@ -153,6 +153,13 @@ export class StockLedgerService {
           sku: '$product.sku',
           name: '$product.name',
           unit: '$product.unit',
+          costPrice: { $ifNull: ['$product.costPrice', 0] },
+          sellPrice: { $ifNull: ['$product.sellPrice', 0] },
+          reorderPoint: { $ifNull: ['$product.reorderPoint', 0] },
+          reorderQty: { $ifNull: ['$product.reorderQty', 0] },
+          valuation: {
+            $multiply: ['$balance', { $ifNull: ['$product.costPrice', 0] }],
+          },
           balance: 1,
           lastUpdated: 1,
         },
