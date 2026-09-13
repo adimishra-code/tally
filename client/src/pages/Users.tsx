@@ -9,6 +9,7 @@ export default function Users() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -344,50 +345,77 @@ export default function Users() {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user: any) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${getRoleBadge(user.role)}`}>
-                        {user.role.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={`px-2 py-1 text-xs font-bold rounded uppercase ${
-                          user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => startEdit(user)}
-                          className="text-sm text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                filteredUsers.map((user: any) => {
+                  const isSelf =
+                    user._id === currentUser.id ||
+                    user._id === currentUser._id ||
+                    user.email === currentUser.email;
+
+                  return (
+                    <tr key={user._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                          {isSelf && (
+                            <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded border border-blue-200">
+                              You
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${getRoleBadge(user.role)}`}>
+                          {user.role.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={`px-2 py-1 text-xs font-bold rounded uppercase ${
+                            user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}
                         >
-                          Edit
-                        </button>
-                        {user.isActive && (
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => {
-                              if (confirm('Are you sure you want to deactivate this user?')) {
-                                deactivateMutation.mutate(user._id);
-                              }
-                            }}
-                            className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                            onClick={() => startEdit(user)}
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
                           >
-                            Deactivate
+                            Edit
                           </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {user.isActive ? (
+                            !isSelf && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Are you sure you want to deactivate ${user.name}?`)) {
+                                    deactivateMutation.mutate(user._id);
+                                  }
+                                }}
+                                className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                              >
+                                Deactivate
+                              </button>
+                            )
+                          ) : (
+                            <button
+                              onClick={() => {
+                                if (confirm(`Reactivate account for ${user.name}?`)) {
+                                  updateMutation.mutate({ id: user._id, data: { isActive: true } });
+                                }
+                              }}
+                              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                            >
+                              Reactivate
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

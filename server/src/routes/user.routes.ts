@@ -183,6 +183,21 @@ router.patch(
         return;
       }
 
+      if (req.params.id === authReq.userId.toString() && data.isActive === false) {
+        res.status(400).json({ error: 'Cannot deactivate your own account' });
+        return;
+      }
+
+      if (user.role === Role.OWNER && authReq.userRole !== Role.OWNER) {
+        res.status(403).json({ error: 'Only owners can modify an owner account' });
+        return;
+      }
+
+      if (data.role === Role.OWNER && authReq.userRole !== Role.OWNER) {
+        res.status(403).json({ error: 'Only owners can promote a user to owner' });
+        return;
+      }
+
       const before = { name: user.name, role: user.role, isActive: user.isActive };
 
       const updateData: any = {};
@@ -235,26 +250,35 @@ router.patch(
 );
 
 /**
- * DELETE /users/:id - Deactivate a user (OWNER only)
+ * DELETE /users/:id - Deactivate a user (OWNER or ADMIN)
  */
 router.delete(
   '/:id',
   requireAuth,
-  requireRole(Role.OWNER),
+  requireRole(Role.OWNER, Role.ADMIN),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const authReq = req as AuthRequest;
 
-      const user = await User.findOneAndUpdate(
-        { _id: req.params.id, orgId: authReq.orgId },
-        { $set: { isActive: false } },
-        { new: true }
-      ).select('-passwordHash');
+      if (req.params.id === authReq.userId.toString()) {
+        res.status(400).json({ error: 'Cannot deactivate your own account' });
+        return;
+      }
+
+      const user = await User.findOne({ _id: req.params.id, orgId: authReq.orgId });
 
       if (!user) {
         res.status(404).json({ error: 'User not found' });
         return;
       }
+
+      if (user.role === Role.OWNER && authReq.userRole !== Role.OWNER) {
+        res.status(403).json({ error: 'Only owners can deactivate an owner account' });
+        return;
+      }
+
+      user.isActive = false;
+      await user.save();
 
       await AuditLog.create({
         orgId: authReq.orgId,
