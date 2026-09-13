@@ -88,7 +88,7 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
         productId: l.productId,
         receivedQty: Number(l.receivedQty),
         batchNumber: l.batchNumber ? l.batchNumber.trim() : undefined,
-        expiryDate: l.expiryDate ? new Date(l.expiryDate).toISOString() : undefined,
+        expiryDate: l.expiryDate && !isNaN(Date.parse(l.expiryDate)) ? new Date(l.expiryDate).toISOString() : undefined,
         binId: l.binId || undefined,
       }));
 

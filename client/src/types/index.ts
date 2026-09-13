@@ -1,9 +1,11 @@
 export interface User {
-  id: string;
+  id?: string;
+  _id?: string;
   orgId: string;
   name: string;
   email: string;
   role: string;
+  isActive?: boolean;
 }
 
 export interface Product {
@@ -27,6 +29,8 @@ export interface Alert {
   message: string;
   metadata: Record<string, any>;
   createdAt: string;
+  acknowledgedAt?: string;
+  acknowledgedBy?: { _id: string; name: string; email: string };
 }
 
 export interface PurchaseOrder {
