@@ -168,12 +168,20 @@ export default function Layout() {
         {/* High severity alert banner */}
         {highSeverityCount > 0 && (
           <div className="bg-red-50 border-t border-red-200 px-6 py-2">
-            <p className="text-sm text-red-800 flex items-center gap-2">
-              <span>🚨</span>
-              <span>
-                <strong>{highSeverityCount}</strong> high-priority alert{highSeverityCount !== 1 ? 's' : ''} require immediate resolution.
-              </span>
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-red-800 flex items-center gap-2">
+                <span>🚨</span>
+                <span>
+                  <strong>{highSeverityCount}</strong> high-priority alert{highSeverityCount !== 1 ? 's' : ''} require immediate resolution.
+                </span>
+              </p>
+              <Link
+                to="/alerts"
+                className="text-xs font-bold text-red-700 hover:text-red-900 underline ml-4 shrink-0"
+              >
+                View Alerts Desk &rarr;
+              </Link>
+            </div>
           </div>
         )}
       </header>

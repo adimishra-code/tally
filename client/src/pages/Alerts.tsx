@@ -9,11 +9,16 @@ export default function Alerts() {
   const queryClient = useQueryClient();
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('ALL');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   const { data: alerts, isLoading } = useQuery({
-    queryKey: ['alerts'],
+    queryKey: ['alerts', selectedType, selectedSeverity, searchTerm],
     queryFn: async () => {
-      const { data } = await api.get<Alert[]>('/alerts');
+      const params = new URLSearchParams();
+      if (selectedType !== 'ALL') params.append('type', selectedType);
+      if (selectedSeverity !== 'ALL') params.append('severity', selectedSeverity);
+      if (searchTerm.trim()) params.append('search', searchTerm.trim());
+      const { data } = await api.get<Alert[]>(`/alerts?${params.toString()}`);
       return data;
     },
     refetchInterval: 15000,
@@ -39,6 +44,49 @@ export default function Alerts() {
     onError: () => toast.error('Failed to resolve alert'),
   });
 
+  const acknowledgeAllMutation = useMutation({
+    mutationFn: () => api.post('/alerts/acknowledge-all'),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
+      toast.success(res.data.message || 'All active alerts acknowledged');
+    },
+    onError: () => toast.error('Failed to acknowledge alerts'),
+  });
+
+  const resolveAllMutation = useMutation({
+    mutationFn: () => api.post('/alerts/resolve-all'),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-summary'] });
+      toast.success(res.data.message || 'All alerts resolved');
+    },
+    onError: () => toast.error('Failed to resolve alerts'),
+  });
+
+  const exportAlertsCSV = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedType !== 'ALL') params.append('type', selectedType);
+      if (selectedSeverity !== 'ALL') params.append('severity', selectedSeverity);
+      if (searchTerm.trim()) params.append('search', searchTerm.trim());
+
+      const res = await api.get(`/alerts/export/csv?${params.toString()}`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `alerts-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Alerts exported to CSV');
+    } catch {
+      toast.error('Failed to export alerts');
+    }
+  };
+
   const allAlerts = alerts || [];
   const activeAlerts = allAlerts.filter((a) => a.status === 'ACTIVE');
   const acknowledgedAlerts = allAlerts.filter((a) => a.status === 'ACKNOWLEDGED');
@@ -46,6 +94,14 @@ export default function Alerts() {
   const filteredActive = activeAlerts.filter((a) => {
     if (selectedType !== 'ALL' && a.type !== selectedType) return false;
     if (selectedSeverity !== 'ALL' && a.severity !== selectedSeverity) return false;
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      const matchMsg = a.message?.toLowerCase().includes(q);
+      const matchWh = (a.metadata?.warehouseName as string)?.toLowerCase().includes(q);
+      const matchSku = (a.metadata?.productSku as string)?.toLowerCase().includes(q);
+      const matchProd = (a.metadata?.productName as string)?.toLowerCase().includes(q);
+      if (!matchMsg && !matchWh && !matchSku && !matchProd) return false;
+    }
     return true;
   });
 
@@ -92,6 +148,40 @@ export default function Alerts() {
           <h2 className="text-3xl font-bold text-gray-900 mb-1">Alerts Desk</h2>
           <p className="text-gray-600">Automated BullMQ background health monitors, stock thresholds, and SLA breaches</p>
         </div>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={exportAlertsCSV}
+            className="px-3.5 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-1.5"
+          >
+            <span>📥</span> Export CSV
+          </button>
+          {activeAlerts.length > 0 && (
+            <button
+              onClick={() => {
+                if (confirm(`Acknowledge all ${activeAlerts.length} active alert(s)?`)) {
+                  acknowledgeAllMutation.mutate();
+                }
+              }}
+              disabled={acknowledgeAllMutation.isPending}
+              className="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {acknowledgeAllMutation.isPending ? 'Acknowledging...' : `Acknowledge All (${activeAlerts.length})`}
+            </button>
+          )}
+          {(activeAlerts.length > 0 || acknowledgedAlerts.length > 0) && (
+            <button
+              onClick={() => {
+                if (confirm('Resolve all active and acknowledged alerts?')) {
+                  resolveAllMutation.mutate();
+                }
+              }}
+              disabled={resolveAllMutation.isPending}
+              className="px-3.5 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+            >
+              {resolveAllMutation.isPending ? 'Resolving...' : 'Resolve All'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Summary KPI Cards */}
@@ -134,41 +224,53 @@ export default function Alerts() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {[
-            { label: 'All Types', key: 'ALL' },
-            { label: '⚠️ Low Stock', key: 'LOW_STOCK' },
-            { label: '⏰ Expiry Warning', key: 'EXPIRY_WARNING' },
-            { label: '🚨 SLA Breach', key: 'SLA_BREACH' },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setSelectedType(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                selectedType === tab.key
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* Search & Filter Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="relative flex-1 w-full">
+          <span className="absolute left-3.5 top-2.5 text-gray-400 text-sm">🔍</span>
+          <input
+            type="text"
+            placeholder="Search alerts by message, SKU, product, or warehouse..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs sm:text-sm"
+          />
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-500 font-medium">Severity:</label>
-          <select
-            value={selectedSeverity}
-            onChange={(e) => setSelectedSeverity(e.target.value)}
-            className="px-2.5 py-1 text-xs border border-gray-300 rounded-lg outline-none"
-          >
-            <option value="ALL">All Severities</option>
-            <option value="high">High only</option>
-            <option value="medium">Medium only</option>
-            <option value="low">Low only</option>
-          </select>
+        <div className="flex items-center gap-2.5 w-full md:w-auto flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-1 flex-wrap">
+            {[
+              { label: 'All Types', key: 'ALL' },
+              { label: '⚠️ Low Stock', key: 'LOW_STOCK' },
+              { label: '⏰ Expiry', key: 'EXPIRY_WARNING' },
+              { label: '🚨 SLA', key: 'SLA_BREACH' },
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setSelectedType(tab.key)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  selectedType === tab.key
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <select
+              value={selectedSeverity}
+              onChange={(e) => setSelectedSeverity(e.target.value)}
+              className="px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg outline-none bg-white text-gray-700"
+            >
+              <option value="ALL">All Severities</option>
+              <option value="high">High only</option>
+              <option value="medium">Medium only</option>
+              <option value="low">Low only</option>
+            </select>
+          </div>
         </div>
       </div>
 
