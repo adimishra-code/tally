@@ -47,10 +47,10 @@ export const startExpiryCheckWorker = () => {
             severity: daysUntilExpiry <= 7 ? 'high' : daysUntilExpiry <= 14 ? 'medium' : 'low',
             message: `Product expiring soon: ${(entry.productId as any).name} (Batch: ${entry.batchNumber}) at ${(entry.warehouseId as any).name}. Expires in ${daysUntilExpiry} days`,
             metadata: {
-              productId: entry.productId.toString(),
+              productId: (entry.productId as any)._id ? (entry.productId as any)._id.toString() : entry.productId.toString(),
               productSku: (entry.productId as any).sku,
               productName: (entry.productId as any).name,
-              warehouseId: entry.warehouseId.toString(),
+              warehouseId: (entry.warehouseId as any)._id ? (entry.warehouseId as any)._id.toString() : entry.warehouseId.toString(),
               warehouseName: (entry.warehouseId as any).name,
               batchNumber: entry.batchNumber,
               expiryDate: entry.expiryDate.toISOString(),

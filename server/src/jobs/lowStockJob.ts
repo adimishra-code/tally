@@ -29,7 +29,9 @@ export const startLowStockWorker = () => {
 
           const balance = await StockLedgerService.getBalance(product.orgId, product._id, warehouse._id);
 
-          if (balance <= product.reorderPoint) {
+          const threshold = product.reorderPoint ?? 0;
+
+          if (threshold > 0 && balance <= threshold) {
             // Check if an active alert already exists
             const existingAlert = await Alert.findOne({
               orgId: product.orgId,
@@ -44,7 +46,7 @@ export const startLowStockWorker = () => {
                 orgId: product.orgId,
                 type: AlertType.LOW_STOCK,
                 severity: balance === 0 ? 'high' : 'medium',
-                message: `Low stock alert: ${product.name} (${product.sku}) at ${warehouse.name}. Current: ${balance}, Reorder point: ${product.reorderPoint}`,
+                message: `Low stock alert: ${product.name} (${product.sku}) at ${warehouse.name}. Current: ${balance}, Reorder point: ${threshold}`,
                 metadata: {
                   productId: product._id.toString(),
                   productSku: product.sku,
@@ -52,12 +54,27 @@ export const startLowStockWorker = () => {
                   warehouseId: warehouse._id.toString(),
                   warehouseName: warehouse.name,
                   currentBalance: balance,
-                  reorderPoint: product.reorderPoint,
+                  reorderPoint: threshold,
                   reorderQty: product.reorderQty,
                 },
               });
               broadcastAlert(product.orgId.toString(), alert);
               alertsCreated++;
+            }
+          } else if (threshold > 0 && balance > threshold) {
+            // Stock has been replenished above reorder point: auto-resolve existing active alert
+            const existingAlert = await Alert.findOne({
+              orgId: product.orgId,
+              type: AlertType.LOW_STOCK,
+              status: AlertStatus.ACTIVE,
+              'metadata.productId': product._id.toString(),
+              'metadata.warehouseId': warehouse._id.toString(),
+            });
+
+            if (existingAlert) {
+              existingAlert.status = AlertStatus.RESOLVED;
+              await existingAlert.save();
+              broadcastAlert(product.orgId.toString(), existingAlert);
             }
           }
         }
