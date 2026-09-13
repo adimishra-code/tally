@@ -26,6 +26,14 @@ export default function Dashboard() {
       link: '/products',
     },
     {
+      label: 'Inventory Value',
+      value: summary?.totalValuation != null ? `$${Math.round(summary.totalValuation).toLocaleString()}` : '$0',
+      subtext: `${summary?.lowStockCount ?? 0} items at reorder point`,
+      icon: '💎',
+      color: 'from-amber-500 to-amber-600',
+      link: '/inventory',
+    },
+    {
       label: 'Inbound POs',
       value: summary?.openPOs ?? 0,
       subtext: `${summary?.pendingApprovals ?? 0} pending approval`,
@@ -76,7 +84,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         {kpis.map((kpi) => (
           <Link
             key={kpi.label}

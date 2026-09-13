@@ -93,8 +93,9 @@ export default function Inventory() {
         if (!matchesSku && !matchesName) return false;
       }
 
-      if (stockFilter === 'IN_STOCK') return item.balance > 10;
-      if (stockFilter === 'LOW') return item.balance > 0 && item.balance <= 10;
+      const rp = item.reorderPoint ?? 10;
+      if (stockFilter === 'IN_STOCK') return item.balance > rp;
+      if (stockFilter === 'LOW') return item.balance > 0 && item.balance <= rp;
       if (stockFilter === 'OUT') return item.balance === 0;
       return true;
     })
@@ -109,8 +110,9 @@ export default function Inventory() {
   // Metrics
   const totalSkus = inventory?.length || 0;
   const totalUnits = inventory?.reduce((acc: number, item: any) => acc + (item.balance || 0), 0) || 0;
-  const lowStockCount = inventory?.filter((item: any) => item.balance > 0 && item.balance <= 10).length || 0;
+  const lowStockCount = inventory?.filter((item: any) => item.balance > 0 && item.balance <= (item.reorderPoint ?? 10)).length || 0;
   const outOfStockCount = inventory?.filter((item: any) => item.balance === 0).length || 0;
+  const totalValuation = inventory?.reduce((acc: number, item: any) => acc + (item.valuation ?? ((item.balance || 0) * (item.costPrice || 0))), 0) || 0;
 
   // Export CSV
   const handleExportCsv = () => {
@@ -122,14 +124,19 @@ export default function Inventory() {
     const selectedWh = warehouses?.find((w) => w._id === warehouseId);
     const whName = selectedWh ? selectedWh.name.replace(/\s+/g, '_') : 'warehouse';
 
-    const headers = ['SKU', 'Product Name', 'Unit', 'Balance', 'Status', 'Last Mutation'];
+    const headers = ['SKU', 'Product Name', 'Unit', 'Balance', 'Reorder Point', 'Cost Price', 'Valuation', 'Status', 'Last Mutation'];
     const rows = filteredInventory.map((item: any) => {
-      const status = item.balance === 0 ? 'Out of Stock' : item.balance <= 10 ? 'Low Stock' : 'In Stock';
+      const rp = item.reorderPoint ?? 10;
+      const status = item.balance === 0 ? 'Out of Stock' : item.balance <= rp ? 'Low Stock' : 'In Stock';
+      const val = (item.valuation ?? ((item.balance || 0) * (item.costPrice || 0))).toFixed(2);
       return [
         `"${item.sku || ''}"`,
         `"${(item.name || '').replace(/"/g, '""')}"`,
         `"${item.unit || ''}"`,
         item.balance ?? 0,
+        rp,
+        (item.costPrice ?? 0).toFixed(2),
+        val,
         `"${status}"`,
         `"${item.lastUpdated ? new Date(item.lastUpdated).toISOString() : ''}"`,
       ].join(',');
@@ -314,7 +321,7 @@ export default function Inventory() {
 
       {/* KPI Metrics Cards */}
       {warehouseId && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total SKUs</div>
             <div className="text-2xl font-bold text-gray-900">{totalSkus}</div>
@@ -326,9 +333,16 @@ export default function Inventory() {
             <div className="text-xs text-gray-400 mt-1">Available balance on-hand</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Valuation</div>
+            <div className="text-2xl font-bold text-emerald-600">
+              ${totalValuation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div className="text-xs text-gray-400 mt-1">Total stock value at cost</div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Low Stock</div>
             <div className="text-2xl font-bold text-amber-600">{lowStockCount}</div>
-            <div className="text-xs text-gray-400 mt-1">Stock ≤ 10 units</div>
+            <div className="text-xs text-gray-400 mt-1">At/below reorder point</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
             <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Out of Stock</div>
@@ -367,7 +381,7 @@ export default function Inventory() {
                   stockFilter === 'IN_STOCK' ? 'bg-white text-green-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                In Stock ({inventory ? inventory.filter((i: any) => i.balance > 10).length : 0})
+                In Stock ({inventory ? inventory.filter((i: any) => i.balance > (i.reorderPoint ?? 10)).length : 0})
               </button>
               <button
                 onClick={() => setStockFilter('LOW')}
@@ -417,7 +431,13 @@ export default function Inventory() {
                     Unit
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Reorder Point
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Available Balance
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Valuation
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -433,13 +453,13 @@ export default function Inventory() {
               <tbody className="divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                       Loading inventory...
                     </td>
                   </tr>
                 ) : filteredInventory.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
                       {search || stockFilter !== 'ALL'
                         ? 'No inventory items match the current filters.'
                         : 'No stock records found for this warehouse yet.'}
@@ -447,8 +467,10 @@ export default function Inventory() {
                   </tr>
                 ) : (
                   filteredInventory.map((item: any) => {
-                    const isLow = item.balance <= 10 && item.balance > 0;
+                    const rp = item.reorderPoint ?? 10;
+                    const isLow = item.balance <= rp && item.balance > 0;
                     const isEmpty = item.balance === 0;
+                    const val = item.valuation ?? ((item.balance || 0) * (item.costPrice || 0));
                     return (
                       <tr key={item.productId} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4">
@@ -456,6 +478,11 @@ export default function Inventory() {
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.name}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{item.unit}</td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-mono font-medium text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-200/60">
+                            {rp}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-right">
                           <span
                             className={`text-lg font-bold ${
@@ -465,6 +492,9 @@ export default function Inventory() {
                             {item.balance}
                           </span>
                         </td>
+                        <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                          ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
                         <td className="px-6 py-4">
                           {isEmpty ? (
                             <span className="px-2.5 py-1 text-xs font-bold bg-red-100 text-red-800 rounded uppercase">
@@ -472,7 +502,7 @@ export default function Inventory() {
                             </span>
                           ) : isLow ? (
                             <span className="px-2.5 py-1 text-xs font-bold bg-amber-100 text-amber-800 rounded uppercase">
-                              Low Stock
+                              Low (≤ {rp})
                             </span>
                           ) : (
                             <span className="px-2.5 py-1 text-xs font-bold bg-green-100 text-green-800 rounded uppercase">
