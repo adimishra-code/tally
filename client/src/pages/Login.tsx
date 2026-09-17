@@ -56,6 +56,44 @@ export default function Login() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+          {/* Quick Demo Credentials */}
+          <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-blue-800">
+                Demo Accounts (Apex Logistics)
+              </span>
+              <span className="text-xs text-blue-600">Click to fill</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(true);
+                  setOrgSlug('apex-logistics');
+                  setEmail('admin@apex.com');
+                  setPassword('Password123!');
+                }}
+                className="px-2.5 py-1.5 text-left text-xs bg-white hover:bg-blue-100/50 border border-blue-200 rounded-lg transition-colors font-medium text-gray-800"
+              >
+                👑 <strong>Admin (Owner)</strong>
+                <div className="text-[11px] text-gray-500 font-normal">admin@apex.com</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(true);
+                  setOrgSlug('apex-logistics');
+                  setEmail('marcus.warehouse@apex.com');
+                  setPassword('Password123!');
+                }}
+                className="px-2.5 py-1.5 text-left text-xs bg-white hover:bg-blue-100/50 border border-blue-200 rounded-lg transition-colors font-medium text-gray-800"
+              >
+                📦 <strong>Staff</strong>
+                <div className="text-[11px] text-gray-500 font-normal">marcus.warehouse@apex.com</div>
+              </button>
+            </div>
+          </div>
+
           <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-lg">
             <button
               type="button"

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'fallback-dev-access-secret-tally-warehouse';
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback-dev-refresh-secret-tally-warehouse';
 const ACCESS_TTL = process.env.JWT_ACCESS_TTL || '15m';
 const REFRESH_TTL = process.env.JWT_REFRESH_TTL || '7d';
 
