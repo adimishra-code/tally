@@ -127,7 +127,7 @@ router.get('/export/csv', requireAuth, async (req: Request, res: Response): Prom
         totalReceived,
         totalValue.toFixed(2),
         `"${po.createdBy?.name || po.createdBy?.email || ''}"`,
-        `"${new Date(po.createdAt).toISOString()}"`,
+        `"${po.createdAt ? new Date(po.createdAt).toISOString() : ''}"`,
       ].join(',');
     });
 

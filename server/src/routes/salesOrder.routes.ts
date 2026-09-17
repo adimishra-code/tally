@@ -154,7 +154,7 @@ router.get('/export/csv', requireAuth, async (req: Request, res: Response): Prom
         totalPicked,
         totalShipped,
         `"${so.createdBy?.name || so.createdBy?.email || ''}"`,
-        `"${new Date(so.createdAt).toISOString()}"`,
+        `"${so.createdAt ? new Date(so.createdAt).toISOString() : ''}"`,
       ].join(',');
     });
 

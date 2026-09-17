@@ -168,4 +168,55 @@ export class StockLedgerService {
 
     return result;
   }
+
+  /**
+   * Get current inventory grouped by bin for a warehouse.
+   */
+  static async getWarehouseBinsInventory(orgId: Types.ObjectId, warehouseId: Types.ObjectId) {
+    const result = await StockLedgerEntry.aggregate([
+      { $match: { orgId, warehouseId, binId: { $ne: null } } },
+      {
+        $group: {
+          _id: { binId: '$binId', productId: '$productId' },
+          quantity: { $sum: '$quantityChange' },
+          lastMovement: { $max: '$createdAt' },
+        },
+      },
+      { $match: { quantity: { $gt: 0 } } },
+      {
+        $lookup: {
+          from: 'bins',
+          localField: '_id.binId',
+          foreignField: '_id',
+          as: 'bin',
+        },
+      },
+      { $unwind: '$bin' },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id.productId',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      { $unwind: '$product' },
+      {
+        $project: {
+          binId: '$_id.binId',
+          binCode: '$bin.code',
+          binZone: '$bin.zone',
+          productId: '$_id.productId',
+          sku: '$product.sku',
+          productName: '$product.name',
+          unit: '$product.unit',
+          quantity: 1,
+          lastMovement: 1,
+        },
+      },
+      { $sort: { binCode: 1, sku: 1 } },
+    ]);
+
+    return result;
+  }
 }

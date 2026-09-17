@@ -117,6 +117,34 @@ router.get(
 );
 
 /**
+ * GET /stock/warehouse/:warehouseId/bins - Get bin-level stock balances for a warehouse
+ */
+router.get(
+  '/warehouse/:warehouseId/bins',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authReq = req as AuthRequest;
+      const { warehouseId } = req.params;
+
+      if (!Types.ObjectId.isValid(warehouseId)) {
+        res.status(400).json({ error: 'Invalid warehouse ID' });
+        return;
+      }
+
+      const binInventory = await StockLedgerService.getWarehouseBinsInventory(
+        authReq.orgId,
+        new Types.ObjectId(warehouseId)
+      );
+
+      res.json(binInventory);
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+/**
  * POST /stock/adjust - Manual stock adjustment (damaged goods, physical count correction)
  */
 router.post(
