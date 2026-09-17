@@ -44,8 +44,16 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
 
   const updateShippedQty = (index: number, qty: number) => {
     const updated = [...lines];
-    updated[index] = { ...updated[index], shippedQty: qty };
+    updated[index] = { ...updated[index], shippedQty: Math.max(0, qty) };
     setLines(updated);
+  };
+
+  const handleShipAll = () => {
+    setLines(lines.map((l) => ({ ...l, shippedQty: l.remainingToShip })));
+  };
+
+  const handleClearAll = () => {
+    setLines(lines.map((l) => ({ ...l, shippedQty: 0 })));
   };
 
   const shipMutation = useMutation({
@@ -62,6 +70,13 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    for (const line of lines) {
+      if (line.shippedQty > line.remainingToShip) {
+        toast.error(`Cannot ship ${line.shippedQty} for ${line.productSku}. Max ready to ship is ${line.remainingToShip}`);
+        return;
+      }
+    }
 
     const linesToShip = lines
       .filter((l) => l.shippedQty > 0)
@@ -144,7 +159,26 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-gray-800">Select Items to Ship</h4>
+            <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+              <h4 className="text-sm font-bold text-gray-800">Select Items to Ship</h4>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleShipAll}
+                  className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  Ship All Picked
+                </button>
+                <span className="text-gray-300">|</span>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
             {lines.map((line, index) => (
               <div
                 key={line.productId}

@@ -62,6 +62,14 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
     setLines(updated);
   };
 
+  const handleReceiveAll = () => {
+    setLines(lines.map((l) => ({ ...l, receivedQty: l.remaining })));
+  };
+
+  const handleClearAll = () => {
+    setLines(lines.map((l) => ({ ...l, receivedQty: 0 })));
+  };
+
   const receiveMutation = useMutation({
     mutationFn: (payload: any) => api.post('/receiving', payload),
     onSuccess: (res) => {
@@ -133,6 +141,26 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
 
         {/* Modal Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Line Items to Receive</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleReceiveAll}
+                className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Receive All Remaining
+              </button>
+              <span className="text-gray-300">|</span>
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="text-xs font-medium text-gray-500 hover:text-gray-700"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
           {hasVariance && (
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800 flex items-start gap-2">
               <span>⚠️</span>

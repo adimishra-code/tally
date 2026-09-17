@@ -39,8 +39,16 @@ export default function PickOrderModal({ so, onClose, onSuccess }: PickOrderModa
 
   const updatePickedQty = (index: number, qty: number) => {
     const updated = [...lines];
-    updated[index] = { ...updated[index], pickedQty: qty };
+    updated[index] = { ...updated[index], pickedQty: Math.max(0, qty) };
     setLines(updated);
+  };
+
+  const handlePickAll = () => {
+    setLines(lines.map((l) => ({ ...l, pickedQty: l.remaining })));
+  };
+
+  const handleClearAll = () => {
+    setLines(lines.map((l) => ({ ...l, pickedQty: 0 })));
   };
 
   const pickMutation = useMutation({
@@ -57,6 +65,13 @@ export default function PickOrderModal({ so, onClose, onSuccess }: PickOrderModa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    for (const line of lines) {
+      if (line.pickedQty > line.remaining) {
+        toast.error(`Cannot pick ${line.pickedQty} for ${line.productSku}. Max remaining is ${line.remaining}`);
+        return;
+      }
+    }
 
     const linesToPick = lines
       .filter((l) => l.pickedQty > 0)
@@ -104,6 +119,27 @@ export default function PickOrderModal({ so, onClose, onSuccess }: PickOrderModa
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Line Items to Pick</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handlePickAll}
+                className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
+              >
+                Pick All Remaining
+              </button>
+              <span className="text-gray-300">|</span>
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="text-xs font-medium text-gray-500 hover:text-gray-700"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-3">
             {lines.map((line, index) => (
               <PickLineRow
