@@ -5,6 +5,7 @@ import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
 import { Role } from '../types/enums';
 import { Bin } from '../models/Bin';
 import { Warehouse } from '../models/Warehouse';
+import { AuditLog } from '../models/AuditLog';
 
 const router = Router();
 
@@ -63,6 +64,7 @@ router.post(
 
       // Check unique code per warehouse
       const existing = await Bin.findOne({
+        orgId: authReq.orgId,
         warehouseId: data.warehouseId,
         code: data.code.toUpperCase(),
       });
@@ -77,6 +79,20 @@ router.post(
         warehouseId: new Types.ObjectId(data.warehouseId),
         code: data.code.toUpperCase(),
         zone: data.zone,
+      });
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'BIN_CREATED',
+        entityType: 'Bin',
+        entityId: bin._id,
+        before: {},
+        after: {
+          warehouseId: bin.warehouseId,
+          code: bin.code,
+          zone: bin.zone,
+        },
       });
 
       res.status(201).json(bin);
@@ -114,6 +130,16 @@ router.delete(
         res.status(404).json({ error: 'Bin not found' });
         return;
       }
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'BIN_DELETED',
+        entityType: 'Bin',
+        entityId: bin._id,
+        before: { code: bin.code, warehouseId: bin.warehouseId, zone: bin.zone },
+        after: {},
+      });
 
       res.json({ message: 'Bin deleted successfully', bin });
     } catch (error) {

@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
 import { Role } from '../types/enums';
 import { Product } from '../models/Product';
+import { AuditLog } from '../models/AuditLog';
 
 const router = Router();
 
@@ -43,6 +44,21 @@ router.post(
       const product = await Product.create({
         orgId: authReq.orgId,
         ...data,
+      });
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'PRODUCT_CREATED',
+        entityType: 'Product',
+        entityId: product._id,
+        before: {},
+        after: {
+          sku: product.sku,
+          name: product.name,
+          costPrice: product.costPrice,
+          sellPrice: product.sellPrice,
+        },
       });
 
       res.status(201).json(product);
@@ -136,6 +152,12 @@ router.patch(
         return;
       }
 
+      const previous = await Product.findOne({ _id: req.params.id, orgId: authReq.orgId });
+      if (!previous) {
+        res.status(404).json({ error: 'Product not found' });
+        return;
+      }
+
       const product = await Product.findOneAndUpdate(
         { _id: req.params.id, orgId: authReq.orgId },
         { $set: data },
@@ -146,6 +168,21 @@ router.patch(
         res.status(404).json({ error: 'Product not found' });
         return;
       }
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'PRODUCT_UPDATED',
+        entityType: 'Product',
+        entityId: product._id,
+        before: {
+          name: previous.name,
+          costPrice: previous.costPrice,
+          sellPrice: previous.sellPrice,
+          reorderPoint: previous.reorderPoint,
+        },
+        after: data,
+      });
 
       res.json(product);
     } catch (error) {
@@ -189,6 +226,16 @@ router.delete(
         res.status(404).json({ error: 'Product not found' });
         return;
       }
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'PRODUCT_DEACTIVATED',
+        entityType: 'Product',
+        entityId: product._id,
+        before: { isActive: true },
+        after: { isActive: false },
+      });
 
       res.json({ message: 'Product deactivated', product });
     } catch (error) {
@@ -261,6 +308,16 @@ router.post(
         }
       }
 
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'PRODUCTS_BULK_IMPORTED',
+        entityType: 'Product',
+        entityId: authReq.orgId,
+        before: {},
+        after: { created, skipped },
+      });
+
       res.json({
         message: `Imported ${created} product(s), skipped ${skipped} existing.`,
         created,
@@ -298,8 +355,19 @@ router.patch(
         return;
       }
 
+      const previousStatus = product.isActive;
       product.isActive = !product.isActive;
       await product.save();
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'PRODUCT_STATUS_TOGGLED',
+        entityType: 'Product',
+        entityId: product._id,
+        before: { isActive: previousStatus },
+        after: { isActive: product.isActive },
+      });
 
       res.json({ message: `Product ${product.isActive ? 'activated' : 'deactivated'}`, product });
     } catch (error) {

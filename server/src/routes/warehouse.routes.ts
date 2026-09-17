@@ -5,6 +5,7 @@ import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
 import { Role } from '../types/enums';
 import { Warehouse } from '../models/Warehouse';
 import { Bin } from '../models/Bin';
+import { AuditLog } from '../models/AuditLog';
 
 const router = Router();
 
@@ -91,6 +92,16 @@ router.post(
         ...data,
       });
 
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'WAREHOUSE_CREATED',
+        entityType: 'Warehouse',
+        entityId: warehouse._id,
+        before: {},
+        after: { name: warehouse.name, address: warehouse.address },
+      });
+
       res.status(201).json(warehouse);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -117,6 +128,12 @@ router.patch(
         return;
       }
 
+      const previous = await Warehouse.findOne({ _id: req.params.id, orgId: authReq.orgId });
+      if (!previous) {
+        res.status(404).json({ error: 'Warehouse not found' });
+        return;
+      }
+
       const data = updateWarehouseSchema.parse(req.body);
       const warehouse = await Warehouse.findOneAndUpdate(
         { _id: req.params.id, orgId: authReq.orgId },
@@ -128,6 +145,16 @@ router.patch(
         res.status(404).json({ error: 'Warehouse not found' });
         return;
       }
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'WAREHOUSE_UPDATED',
+        entityType: 'Warehouse',
+        entityId: warehouse._id,
+        before: { name: previous.name, address: previous.address, isActive: previous.isActive },
+        after: data,
+      });
 
       res.json(warehouse);
     } catch (error) {
@@ -165,6 +192,16 @@ router.delete(
         res.status(404).json({ error: 'Warehouse not found' });
         return;
       }
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'WAREHOUSE_DEACTIVATED',
+        entityType: 'Warehouse',
+        entityId: warehouse._id,
+        before: { isActive: true },
+        after: { isActive: false },
+      });
 
       res.json({ message: 'Warehouse deactivated successfully', warehouse });
     } catch (error) {

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
 import { Role } from '../types/enums';
 import { Organization } from '../models/Organization';
+import { AuditLog } from '../models/AuditLog';
 
 const router = Router();
 
@@ -42,6 +43,12 @@ router.patch(
       const authReq = req as AuthRequest;
       const data = updateOrgSchema.parse(req.body);
 
+      const previous = await Organization.findById(authReq.orgId);
+      if (!previous) {
+        res.status(404).json({ error: 'Organization not found' });
+        return;
+      }
+
       const org = await Organization.findByIdAndUpdate(
         authReq.orgId,
         { $set: data },
@@ -52,6 +59,19 @@ router.patch(
         res.status(404).json({ error: 'Organization not found' });
         return;
       }
+
+      await AuditLog.create({
+        orgId: authReq.orgId,
+        userId: authReq.userId,
+        action: 'ORGANIZATION_UPDATED',
+        entityType: 'Organization',
+        entityId: org._id,
+        before: {
+          name: previous.name,
+          poApprovalThreshold: previous.poApprovalThreshold,
+        },
+        after: data,
+      });
 
       res.json(org);
     } catch (error) {

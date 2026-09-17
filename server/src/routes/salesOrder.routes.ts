@@ -8,6 +8,7 @@ import { SalesOrder } from '../models/SalesOrder';
 import { SalesOrderService } from '../services/SalesOrderService';
 import { StockLedgerService } from '../services/StockLedgerService';
 import { Shipment } from '../models/Shipment';
+import { AuditLog } from '../models/AuditLog';
 import { broadcastOrderUpdate } from '../utils/socket';
 
 const router = Router();
@@ -501,6 +502,26 @@ router.post(
         const productId = new Types.ObjectId(line.productId);
         await SalesOrderService.updateShippedQty(session, orderId, productId, line.shippedQty);
       }
+
+      await AuditLog.create(
+        [
+          {
+            orgId: authReq.orgId,
+            userId: authReq.userId,
+            action: 'ORDER_SHIPPED',
+            entityType: 'SalesOrder',
+            entityId: orderId,
+            before: { status: so.status },
+            after: {
+              shipmentId: shipment[0]._id,
+              carrier: data.carrier,
+              trackingNumber: data.trackingNumber,
+              linesCount: data.lines.length,
+            },
+          },
+        ],
+        { session }
+      );
 
       await session.commitTransaction();
 

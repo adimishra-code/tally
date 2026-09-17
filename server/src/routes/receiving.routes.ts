@@ -7,6 +7,7 @@ import { Role, LedgerEntryType, PurchaseOrderStatus } from '../types/enums';
 import { PurchaseOrder } from '../models/PurchaseOrder';
 import { Product } from '../models/Product';
 import { Bin } from '../models/Bin';
+import { AuditLog } from '../models/AuditLog';
 import { StockLedgerService } from '../services/StockLedgerService';
 import { PurchaseOrderService } from '../services/PurchaseOrderService';
 
@@ -125,6 +126,24 @@ router.post(
         // Update PO line received quantity
         await PurchaseOrderService.updateReceivedQty(session, poId, productId, line.receivedQty);
       }
+
+      await AuditLog.create(
+        [
+          {
+            orgId: authReq.orgId,
+            userId: authReq.userId,
+            action: variances.length > 0 ? 'GOODS_RECEIVED_WITH_VARIANCE' : 'GOODS_RECEIVED',
+            entityType: 'PurchaseOrder',
+            entityId: poId,
+            before: { status: po.status },
+            after: {
+              linesReceived: data.lines.length,
+              variances: variances.length > 0 ? variances : undefined,
+            },
+          },
+        ],
+        { session }
+      );
 
       await session.commitTransaction();
 
