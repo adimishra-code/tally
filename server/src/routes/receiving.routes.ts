@@ -6,6 +6,7 @@ import { requireAuth, requireRole, AuthRequest } from '../middleware/auth';
 import { Role, LedgerEntryType, PurchaseOrderStatus } from '../types/enums';
 import { PurchaseOrder } from '../models/PurchaseOrder';
 import { Product } from '../models/Product';
+import { Bin } from '../models/Bin';
 import { StockLedgerService } from '../services/StockLedgerService';
 import { PurchaseOrderService } from '../services/PurchaseOrderService';
 
@@ -76,6 +77,21 @@ router.post(
           await session.abortTransaction();
           res.status(400).json({ error: `Product ${line.productId} not found in PO` });
           return;
+        }
+
+        // Validate bin if specified
+        if (line.binId) {
+          const binExists = await Bin.findOne({
+            _id: new Types.ObjectId(line.binId),
+            warehouseId: po.warehouseId,
+            orgId: authReq.orgId,
+          }).session(session);
+
+          if (!binExists) {
+            await session.abortTransaction();
+            res.status(400).json({ error: `Bin ${line.binId} not found in destination warehouse` });
+            return;
+          }
         }
 
         // Check if receiving more than ordered

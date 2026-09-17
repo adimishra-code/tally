@@ -341,12 +341,28 @@ router.post(
         return;
       }
 
-      // Process each line
+      // Validate each line against sales order specifications first
       for (const line of data.lines) {
         const productId = new Types.ObjectId(line.productId);
-        const warehouseId = new Types.ObjectId(line.warehouseId);
+        const soLine = so.lines.find((l) => l.productId.equals(productId));
 
-        // Check stock balance
+        if (!soLine) {
+          await session.abortTransaction();
+          res.status(400).json({ error: `Product ${line.productId} not found in sales order` });
+          return;
+        }
+
+        const remainingToPick = soLine.orderedQty - (soLine.pickedQty || 0);
+        if (line.pickedQty > remainingToPick) {
+          await session.abortTransaction();
+          res.status(400).json({
+            error: `Cannot pick ${line.pickedQty} units of product ${line.productId}. Only ${remainingToPick} remaining to pick`,
+          });
+          return;
+        }
+
+        const warehouseId = new Types.ObjectId(line.warehouseId);
+        // Check stock balance in warehouse
         const balance = await StockLedgerService.getBalance(authReq.orgId, productId, warehouseId, session);
 
         if (balance < line.pickedQty) {
@@ -439,6 +455,27 @@ router.post(
         await session.abortTransaction();
         res.status(400).json({ error: `Cannot ship order in ${so.status} status` });
         return;
+      }
+
+      // Pre-validate that lines exist and do not exceed picked quantities
+      for (const line of data.lines) {
+        const productId = new Types.ObjectId(line.productId);
+        const soLine = so.lines.find((l) => l.productId.equals(productId));
+
+        if (!soLine) {
+          await session.abortTransaction();
+          res.status(400).json({ error: `Product ${line.productId} not found in sales order` });
+          return;
+        }
+
+        const remainingToShip = (soLine.pickedQty || 0) - (soLine.shippedQty || 0);
+        if (line.shippedQty > remainingToShip) {
+          await session.abortTransaction();
+          res.status(400).json({
+            error: `Cannot ship ${line.shippedQty} units of product ${line.productId}. Only ${remainingToShip} picked units ready for shipping`,
+          });
+          return;
+        }
       }
 
       // Create shipment

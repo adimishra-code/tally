@@ -1,8 +1,9 @@
 import { Types, ClientSession } from 'mongoose';
 import { SalesOrder, ISalesOrder } from '../models/SalesOrder';
 import { AuditLog } from '../models/AuditLog';
-import { SalesOrderStatus, SO_TRANSITIONS } from '../types/enums';
+import { SalesOrderStatus, SO_TRANSITIONS, LedgerEntryType } from '../types/enums';
 import { broadcastOrderUpdate } from '../utils/socket';
+import { StockLedgerService } from './StockLedgerService';
 
 interface CreateSOParams {
   orgId: Types.ObjectId;
@@ -49,7 +50,8 @@ export class SalesOrderService {
   }
 
   /**
-   * Transition SO to a new status
+   * Transition SO to a new status.
+   * If cancelling an order with picked goods, automatically restocks them to inventory.
    */
   static async transition(
     so: ISalesOrder,
@@ -65,26 +67,70 @@ export class SalesOrderService {
       );
     }
 
-    const updated = await SalesOrder.findByIdAndUpdate(so._id, { $set: { status: nextStatus } }, { new: true });
+    const session = await SalesOrder.startSession();
+    session.startTransaction();
 
-    if (!updated) {
-      throw new Error('Failed to update sales order');
+    try {
+      // If cancelling from PICKING status, return all picked items back to warehouse stock
+      if (currentStatus === SalesOrderStatus.PICKING && nextStatus === SalesOrderStatus.CANCELLED) {
+        for (const line of so.lines) {
+          const picked = line.pickedQty || 0;
+          if (picked > 0) {
+            await StockLedgerService.record(session, {
+              orgId: so.orgId,
+              productId: line.productId,
+              warehouseId: so.warehouseId,
+              type: LedgerEntryType.RETURN,
+              quantityChange: picked,
+              referenceType: 'SalesOrder',
+              referenceId: so._id,
+              createdBy: userId,
+            });
+            line.pickedQty = 0;
+          }
+        }
+      }
+
+      const updated = await SalesOrder.findByIdAndUpdate(
+        so._id,
+        { $set: { status: nextStatus, lines: so.lines } },
+        { new: true, session }
+      );
+
+      if (!updated) {
+        throw new Error('Failed to update sales order');
+      }
+
+      await this.logAudit(
+        so.orgId,
+        userId,
+        'SO_TRANSITION',
+        so._id,
+        { status: currentStatus },
+        { status: nextStatus },
+        session
+      );
+
+      await session.commitTransaction();
+
+      broadcastOrderUpdate(so.orgId.toString(), {
+        type: 'SO',
+        orderId: so._id.toString(),
+        status: nextStatus,
+        orderNumber: so.orderNumber,
+      });
+
+      return updated;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
     }
-
-    await this.logAudit(so.orgId, userId, 'SO_TRANSITION', so._id, { status: currentStatus }, { status: nextStatus });
-
-    broadcastOrderUpdate(so.orgId.toString(), {
-      type: 'SO',
-      orderId: so._id.toString(),
-      status: nextStatus,
-      orderNumber: so.orderNumber,
-    });
-
-    return updated;
   }
 
   /**
-   * Update picked quantity for a line
+   * Update picked quantity for a line with ceiling validation
    */
   static async updatePickedQty(
     session: ClientSession,
@@ -102,7 +148,14 @@ export class SalesOrderService {
       throw new Error('Product not found in sales order');
     }
 
-    line.pickedQty += pickedQty;
+    const currentPicked = line.pickedQty || 0;
+    if (currentPicked + pickedQty > line.orderedQty) {
+      throw new Error(
+        `Cannot pick ${pickedQty} units. Ordered: ${line.orderedQty}, already picked: ${currentPicked}`
+      );
+    }
+
+    line.pickedQty = currentPicked + pickedQty;
 
     await SalesOrder.updateOne({ _id: soId }, { $set: { lines: so.lines } }, { session });
 
@@ -115,7 +168,7 @@ export class SalesOrderService {
   }
 
   /**
-   * Update shipped quantity for a line
+   * Update shipped quantity for a line with picked ceiling validation
    */
   static async updateShippedQty(
     session: ClientSession,
@@ -133,11 +186,19 @@ export class SalesOrderService {
       throw new Error('Product not found in sales order');
     }
 
-    line.shippedQty += shippedQty;
+    const currentShipped = line.shippedQty || 0;
+    const currentPicked = line.pickedQty || 0;
+    if (currentShipped + shippedQty > currentPicked) {
+      throw new Error(
+        `Cannot ship ${shippedQty} units. Picked: ${currentPicked}, already shipped: ${currentShipped}`
+      );
+    }
+
+    line.shippedQty = currentShipped + shippedQty;
 
     // Check if all lines are fully shipped
-    const allShipped = so.lines.every((l) => l.shippedQty >= l.orderedQty);
-    const anyShipped = so.lines.some((l) => l.shippedQty > 0);
+    const allShipped = so.lines.every((l) => (l.shippedQty || 0) >= l.orderedQty);
+    const anyShipped = so.lines.some((l) => (l.shippedQty || 0) > 0);
 
     let newStatus = so.status;
     if (allShipped) {
@@ -165,16 +226,22 @@ export class SalesOrderService {
     action: string,
     entityId: Types.ObjectId,
     before: Record<string, unknown>,
-    after: Record<string, unknown>
+    after: Record<string, unknown>,
+    session?: ClientSession
   ): Promise<void> {
-    await AuditLog.create({
-      orgId,
-      userId,
-      action,
-      entityType: 'SalesOrder',
-      entityId,
-      before,
-      after,
-    });
+    await AuditLog.create(
+      [
+        {
+          orgId,
+          userId,
+          action,
+          entityType: 'SalesOrder',
+          entityId,
+          before,
+          after,
+        },
+      ],
+      session ? { session } : undefined
+    );
   }
 }
