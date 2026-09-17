@@ -56,7 +56,8 @@ export class SalesOrderService {
   static async transition(
     so: ISalesOrder,
     nextStatus: SalesOrderStatus,
-    userId: Types.ObjectId
+    userId: Types.ObjectId,
+    externalSession?: ClientSession
   ): Promise<ISalesOrder> {
     const currentStatus = so.status;
 
@@ -67,8 +68,25 @@ export class SalesOrderService {
       );
     }
 
-    const session = await SalesOrder.startSession();
-    session.startTransaction();
+    let session: ClientSession | null = externalSession || null;
+    let ownsSession = false;
+
+    if (!session) {
+      const topologyType = (SalesOrder.db as any)?.client?.topology?.description?.type;
+      const canUseTransactions =
+        topologyType === 'ReplicaSetWithPrimary' || topologyType === 'Sharded' || topologyType === 'LoadBalanced';
+
+      if (canUseTransactions) {
+        try {
+          const s = await SalesOrder.startSession();
+          s.startTransaction();
+          session = s;
+          ownsSession = true;
+        } catch {
+          session = null;
+        }
+      }
+    }
 
     try {
       // If cancelling from PICKING status, return all picked items back to warehouse stock
@@ -94,7 +112,7 @@ export class SalesOrderService {
       const updated = await SalesOrder.findByIdAndUpdate(
         so._id,
         { $set: { status: nextStatus, lines: so.lines } },
-        { new: true, session }
+        session ? { new: true, session } : { new: true }
       );
 
       if (!updated) {
@@ -108,10 +126,12 @@ export class SalesOrderService {
         so._id,
         { status: currentStatus },
         { status: nextStatus },
-        session
+        session || undefined
       );
 
-      await session.commitTransaction();
+      if (ownsSession && session) {
+        await session.commitTransaction();
+      }
 
       broadcastOrderUpdate(so.orgId.toString(), {
         type: 'SO',
@@ -122,10 +142,14 @@ export class SalesOrderService {
 
       return updated;
     } catch (error) {
-      await session.abortTransaction();
+      if (ownsSession && session) {
+        await session.abortTransaction();
+      }
       throw error;
     } finally {
-      session.endSession();
+      if (ownsSession && session) {
+        session.endSession();
+      }
     }
   }
 
