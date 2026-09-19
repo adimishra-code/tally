@@ -157,16 +157,20 @@ export default function Layout() {
     .toUpperCase();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased relative selection:bg-blue-600 selection:text-white">
+      {/* Background ambient glow */}
+      <div className="fixed top-0 left-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
+
       {/* Top Header */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-50 shadow-xs">
+      <header className="bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 sticky top-0 z-50 shadow-md shadow-black/20">
         <div className="px-4 sm:px-6 py-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-5">
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-900 lg:hidden transition-colors border border-slate-800/80"
                 aria-label="Toggle navigation menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,25 +185,25 @@ export default function Layout() {
               {/* Logo & Live Status */}
               <div className="flex items-center gap-3">
                 <Link to="/" className="flex items-center gap-2.5 group">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-105 transition-transform">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                   </div>
-                  <span className="text-lg font-extrabold tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors">
+                  <span className="text-lg font-extrabold tracking-tight text-white group-hover:text-blue-400 transition-colors">
                     Tally
                   </span>
                 </Link>
 
                 <div
-                  className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                  className={`hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                     isConnected
-                      ? 'bg-emerald-50 border-emerald-200/80 text-emerald-700'
-                      : 'bg-slate-100 border-slate-200 text-slate-500'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                      : 'bg-slate-900 border-slate-800 text-slate-400'
                   }`}
                   title={isConnected ? 'Real-time WebSocket active' : 'WebSocket connecting...'}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
                   {isConnected ? 'Live Sync' : 'Offline'}
                 </div>
               </div>
@@ -214,18 +218,18 @@ export default function Layout() {
                       to={item.path}
                       className={`relative px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                         isActive
-                          ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/60 shadow-xs'
-                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-transparent'
+                          ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/30 shadow-xs'
+                          : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/80 border border-transparent'
                       }`}
                     >
-                      <span className={isActive ? 'text-blue-600' : 'text-slate-400'}>{item.icon}</span>
+                      <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{item.icon}</span>
                       <span>{item.label}</span>
                       {item.badge !== undefined && item.badge > 0 && (
                         <span
                           className={`ml-1 px-1.5 py-0.2 text-[10px] font-bold rounded-full ${
                             highSeverityCount > 0
-                              ? 'bg-red-600 text-white'
-                              : 'bg-amber-500 text-white'
+                              ? 'bg-rose-500 text-white shadow-xs shadow-rose-500/30'
+                              : 'bg-amber-500 text-white shadow-xs shadow-amber-500/30'
                           }`}
                         >
                           {item.badge}
@@ -239,13 +243,13 @@ export default function Layout() {
 
             {/* User Profile & Actions */}
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2.5 pl-3 border-l border-slate-200">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+              <div className="hidden sm:flex items-center gap-2.5 pl-3 border-l border-slate-800">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-blue-500/20 ring-2 ring-slate-800">
                   {userInitials}
                 </div>
                 <div className="flex flex-col text-left leading-tight">
-                  <span className="text-xs font-semibold text-slate-900">{user.name || 'User'}</span>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-semibold">
+                  <span className="text-xs font-semibold text-slate-200">{user.name || 'User'}</span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
                     {user.role || 'Staff'}
                   </span>
                 </div>
@@ -253,7 +257,7 @@ export default function Layout() {
 
               <button
                 onClick={handleLogout}
-                className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 hover:border-red-200 rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-rose-300 hover:bg-rose-500/10 hover:border-rose-500/30 rounded-lg border border-slate-800 transition-colors flex items-center gap-1.5"
                 title="Log out of current workspace"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
@@ -267,7 +271,7 @@ export default function Layout() {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 animate-in slide-in-from-top-1 duration-150">
+          <div className="lg:hidden border-t border-slate-800/80 bg-slate-950 px-4 py-3 space-y-1 animate-in slide-in-from-top-1 duration-150">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -277,18 +281,18 @@ export default function Layout() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium ${
                     isActive
-                      ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200'
-                      : 'text-slate-700 hover:bg-slate-100'
+                      ? 'bg-blue-600/15 text-blue-400 font-bold border border-blue-500/30'
+                      : 'text-slate-300 hover:bg-slate-900'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className={isActive ? 'text-blue-600' : 'text-slate-400'}>{item.icon}</span>
+                    <span className={isActive ? 'text-blue-400' : 'text-slate-400'}>{item.icon}</span>
                     <span>{item.label}</span>
                   </div>
                   {item.badge !== undefined && item.badge > 0 && (
                     <span
                       className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                        highSeverityCount > 0 ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'
+                        highSeverityCount > 0 ? 'bg-rose-500 text-white' : 'bg-amber-500 text-white'
                       }`}
                     >
                       {item.badge}
@@ -302,19 +306,19 @@ export default function Layout() {
 
         {/* High severity alert banner */}
         {highSeverityCount > 0 && (
-          <div className="bg-red-50 border-t border-red-200 px-6 py-2">
+          <div className="bg-rose-950/40 border-t border-rose-900/60 px-6 py-2">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-red-800 flex items-center gap-2">
-                <svg className="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+              <p className="text-xs text-rose-300 flex items-center gap-2">
+                <svg className="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <span>
-                  <strong className="font-semibold text-red-900">{highSeverityCount}</strong> high-priority alert{highSeverityCount !== 1 ? 's' : ''} require immediate resolution.
+                  <strong className="font-semibold text-rose-200">{highSeverityCount}</strong> high-priority alert{highSeverityCount !== 1 ? 's' : ''} require immediate resolution.
                 </span>
               </p>
               <Link
                 to="/alerts"
-                className="text-xs font-semibold text-red-700 hover:text-red-900 underline ml-4 shrink-0"
+                className="text-xs font-semibold text-rose-400 hover:text-rose-300 underline ml-4 shrink-0"
               >
                 View Alerts Desk &rarr;
               </Link>
@@ -324,7 +328,7 @@ export default function Layout() {
       </header>
 
       {/* Main workspace container */}
-      <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full relative z-10">
         <Outlet />
       </main>
     </div>

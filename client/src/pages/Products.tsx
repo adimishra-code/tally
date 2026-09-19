@@ -170,27 +170,27 @@ export default function Products() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">Product Catalog</h2>
-          <p className="text-gray-600">SKU definitions, reorder thresholds, and pricing</p>
+          <h2 className="text-3xl font-extrabold text-white tracking-tight">Product Catalog</h2>
+          <p className="text-slate-400 text-sm mt-0.5">SKU definitions, reorder thresholds, and pricing</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={handleExportCsv}
-            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-1.5"
           >
-            <IconExport className="w-4 h-4 text-gray-500" />
+            <IconExport className="w-4 h-4 text-slate-400" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={() => setShowImportModal(true)}
-            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-1.5"
           >
-            <IconImport className="w-4 h-4 text-gray-500" />
+            <IconImport className="w-4 h-4 text-slate-400" />
             <span>Import CSV</span>
           </button>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm"
+            className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-500/25 text-sm"
           >
             {showCreateForm ? 'Cancel' : '+ New Product'}
           </button>
@@ -198,21 +198,21 @@ export default function Products() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center gap-3">
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-4 flex flex-col md:flex-row items-center gap-3 shadow-md shadow-black/20">
         <div className="relative flex-1 w-full">
-          <span className="absolute left-3.5 top-2.5 text-gray-400">🔍</span>
+          <span className="absolute left-3.5 top-3 text-slate-500">🔍</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by SKU, product name..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
           />
         </div>
         <select
           value={activeFilter}
           onChange={(e) => setActiveFilter(e.target.value)}
-          className="w-full md:w-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+          className="w-full md:w-48 px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium"
         >
           <option value="">All Statuses</option>
           <option value="true">Active Only</option>
@@ -222,8 +222,8 @@ export default function Products() {
 
       {/* Create Form */}
       {showCreateForm && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
-          <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Create New Product</h3>
+        <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 space-y-4 shadow-xl shadow-black/25 text-white">
+          <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-2">Create New Product</h3>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -232,43 +232,43 @@ export default function Products() {
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">SKU*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">SKU*</label>
               <input
                 type="text"
                 value={formData.sku}
                 onChange={(e) => setFormData({ ...formData, sku: e.target.value.toUpperCase() })}
                 placeholder="e.g. SKU-PROD-001"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono uppercase"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-mono uppercase text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Product Name*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Product Name*</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Industrial Steel Widget"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                 required
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Optional product details..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                 rows={2}
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Unit of Measure*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Unit of Measure*</label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
               >
                 <option value="pcs">Pieces (pcs)</option>
                 <option value="box">Box (box)</option>
@@ -278,54 +278,54 @@ export default function Products() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Cost Price ($)*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Cost Price ($)*</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.costPrice}
                 onChange={(e) => setFormData({ ...formData, costPrice: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-mono text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Sell Price ($)*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Sell Price ($)*</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={formData.sellPrice}
                 onChange={(e) => setFormData({ ...formData, sellPrice: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-mono text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Reorder Point</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Reorder Point</label>
               <input
                 type="number"
                 min="0"
                 value={formData.reorderPoint}
                 onChange={(e) => setFormData({ ...formData, reorderPoint: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Reorder Qty</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Reorder Qty</label>
               <input
                 type="number"
                 min="0"
                 value={formData.reorderQty}
                 onChange={(e) => setFormData({ ...formData, reorderQty: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
               />
             </div>
             <div className="md:col-span-2 pt-2">
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="w-full py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-500/25 disabled:opacity-50 text-sm"
               >
                 {createMutation.isPending ? 'Saving...' : 'Save Product'}
               </button>
@@ -335,63 +335,65 @@ export default function Products() {
       )}
 
       {/* Products Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 overflow-hidden shadow-md shadow-black/20">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-slate-950/80 border-b border-slate-800/80">
               <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</th>
-                <th className="px-6 py-3.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
-                <th className="px-6 py-3.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder (Min/Qty)</th>
-                <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3.5 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">SKU</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Unit</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Cost</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">Reorder (Min/Qty)</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-800/50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                     Loading product catalog...
                   </td>
                 </tr>
               ) : !products || products.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                     No products found matching your filters.
                   </td>
                 </tr>
               ) : (
                 products.map((product) => (
-                  <tr key={product._id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={product._id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="px-6 py-4">
-                      <code className="text-sm font-mono font-bold text-gray-900">{product.sku}</code>
+                      <code className="text-xs font-mono font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">
+                        {product.sku}
+                      </code>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                      <div className="text-sm font-semibold text-white">{product.name}</div>
                       {product.description && (
-                        <div className="text-xs text-gray-500 truncate max-w-xs">{product.description}</div>
+                        <div className="text-xs text-slate-400 truncate max-w-xs">{product.description}</div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{product.unit}</td>
-                    <td className="px-6 py-4 text-sm text-right text-gray-900 font-medium">
+                    <td className="px-6 py-4 text-xs text-slate-400">{product.unit}</td>
+                    <td className="px-6 py-4 text-sm text-right text-slate-300 font-mono">
                       ${product.costPrice.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-right text-blue-700 font-bold">
+                    <td className="px-6 py-4 text-sm text-right text-emerald-400 font-mono font-bold">
                       ${product.sellPrice.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-center text-gray-600">
-                      <span className="font-semibold text-gray-900">{product.reorderPoint}</span> / {product.reorderQty}
+                    <td className="px-6 py-4 text-xs text-center text-slate-400 font-mono">
+                      <span className="font-bold text-slate-200">{product.reorderPoint}</span> / {product.reorderQty}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => toggleActiveMutation.mutate(product._id)}
-                        className={`px-2.5 py-1 text-xs font-bold rounded uppercase transition-colors ${
+                        className={`px-2.5 py-1 text-xs font-bold rounded-lg uppercase transition-colors border ${
                           product.isActive
-                            ? 'bg-green-100 hover:bg-green-200 text-green-800'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                            ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border-emerald-500/30'
+                            : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border-slate-700'
                         }`}
                         title="Click to toggle active status"
                       >
@@ -402,7 +404,7 @@ export default function Products() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => setEditingProduct(product)}
-                          className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-blue-50 text-gray-700 hover:text-blue-600 rounded font-medium transition-colors"
+                          className="px-2.5 py-1 text-xs bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 rounded-lg font-semibold transition-colors"
                         >
                           Edit
                         </button>
@@ -412,7 +414,7 @@ export default function Products() {
                               deleteMutation.mutate(product._id);
                             }
                           }}
-                          className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded font-medium transition-colors"
+                          className="px-2.5 py-1 text-xs bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 rounded-lg font-semibold transition-colors"
                         >
                           Deactivate
                         </button>
@@ -428,15 +430,15 @@ export default function Products() {
 
       {/* Edit Product Modal */}
       {editingProduct && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-lg font-bold text-gray-900">
-                Edit Product: <span className="font-mono text-blue-600">{editingProduct.sku}</span>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-bold text-white">
+                Edit Product: <span className="font-mono text-blue-400">{editingProduct.sku}</span>
               </h3>
               <button
                 onClick={() => setEditingProduct(null)}
-                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                className="text-slate-400 hover:text-white text-lg font-bold"
               >
                 ✕
               </button>
@@ -461,33 +463,33 @@ export default function Products() {
               className="space-y-3"
             >
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Name*</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Name*</label>
                 <input
                   type="text"
                   value={editingProduct.name}
                   onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Description</label>
                 <textarea
                   value={editingProduct.description || ''}
                   onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   rows={2}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Unit*</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Unit*</label>
                   <select
                     value={editingProduct.unit}
                     onChange={(e) => setEditingProduct({ ...editingProduct, unit: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   >
                     <option value="pcs">Pieces</option>
                     <option value="box">Box</option>
@@ -497,14 +499,14 @@ export default function Products() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Cost Price ($)*</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Cost Price ($)*</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={editingProduct.costPrice}
                     onChange={(e) => setEditingProduct({ ...editingProduct, costPrice: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-mono text-sm"
                     required
                   />
                 </div>
@@ -512,51 +514,51 @@ export default function Products() {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Sell Price ($)*</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Sell Price ($)*</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
                     value={editingProduct.sellPrice}
                     onChange={(e) => setEditingProduct({ ...editingProduct, sellPrice: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-mono text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Reorder Point</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Reorder Point</label>
                   <input
                     type="number"
                     min="0"
                     value={editingProduct.reorderPoint}
                     onChange={(e) => setEditingProduct({ ...editingProduct, reorderPoint: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">Reorder Qty</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Reorder Qty</label>
                   <input
                     type="number"
                     min="0"
                     value={editingProduct.reorderQty}
                     onChange={(e) => setEditingProduct({ ...editingProduct, reorderQty: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-3 border-t border-gray-100">
+              <div className="flex gap-3 pt-3 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="flex-1 py-2 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 border border-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-800 transition-colors text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="flex-1 py-2 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-500/25 disabled:opacity-50 text-sm"
                 >
                   {updateMutation.isPending ? 'Saving...' : 'Update Product'}
                 </button>
@@ -568,13 +570,13 @@ export default function Products() {
 
       {/* CSV Import Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-xl w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-lg font-bold text-gray-900">Bulk Import Products (CSV)</h3>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-lg font-bold text-white">Bulk Import Products (CSV)</h3>
               <button
                 onClick={() => setShowImportModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                className="text-slate-400 hover:text-white text-lg font-bold"
               >
                 ✕
               </button>
@@ -582,24 +584,24 @@ export default function Products() {
 
             <form onSubmit={handleImportSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Upload .csv File</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Upload .csv File</label>
                 <input
                   type="file"
                   accept=".csv"
                   onChange={handleFileUpload}
-                  className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                  className="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600/20 file:text-blue-300 hover:file:bg-blue-600/30 cursor-pointer"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">
-                  Or Paste Raw CSV Data (Header required: SKU, Name, Description, Unit, CostPrice, SellPrice, ReorderPoint, ReorderQty)
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Or Paste Raw CSV Data (Header: SKU, Name, Description, Unit, CostPrice, SellPrice, ReorderPoint, ReorderQty)
                 </label>
                 <textarea
                   value={importCsvText}
                   onChange={(e) => setImportCsvText(e.target.value)}
                   placeholder="SKU,Name,Description,Unit,CostPrice,SellPrice,ReorderPoint,ReorderQty&#10;SKU-101,Widget A,Standard widget,pcs,10.50,19.99,10,50"
-                  className="w-full px-3 py-2 text-xs font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 text-xs font-mono bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
                   rows={6}
                   required
                 />
@@ -609,14 +611,14 @@ export default function Products() {
                 <button
                   type="button"
                   onClick={() => setShowImportModal(false)}
-                  className="flex-1 py-2 text-sm border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 border border-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-800 transition-colors text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={importMutation.isPending}
-                  className="flex-1 py-2 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-500/25 disabled:opacity-50 text-sm"
                 >
                   {importMutation.isPending ? 'Importing...' : 'Start Import'}
                 </button>
