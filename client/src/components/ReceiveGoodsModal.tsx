@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Bin } from '../types';
+import { IconInbox, IconClose } from './Icons';
 
 interface ReceiveGoodsModalProps {
   po: any;
@@ -121,7 +122,9 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
         <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
           <div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">📥</span>
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                <IconInbox className="w-5 h-5" />
+              </div>
               <h3 className="text-xl font-bold text-gray-900">
                 Receive Goods: <span className="font-mono text-blue-600">{po.poNumber}</span>
               </h3>
@@ -133,9 +136,9 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 rounded-md"
+            className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            ✕
+            <IconClose className="w-5 h-5" />
           </button>
         </div>
 

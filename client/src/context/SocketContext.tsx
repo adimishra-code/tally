@@ -75,17 +75,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
       queryClient.invalidateQueries({ queryKey: ['alerts-count'] });
 
-      const severityIcons: Record<string, string> = {
-        critical: '🚨',
-        high: '⚠️',
-        medium: '🔔',
-        low: 'ℹ️',
-      };
-
-      toast(alert.message || 'New system alert generated', {
-        icon: severityIcons[alert.severity] || '🔔',
-        duration: 5000,
-      });
+      if (alert.severity === 'high' || alert.severity === 'critical') {
+        toast.error(alert.message || 'High severity alert generated', { duration: 6000 });
+      } else {
+        toast(alert.message || 'System notification', { duration: 4000 });
+      }
     });
 
     setSocket(socketInstance);

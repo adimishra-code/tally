@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
+import { IconExport } from '../components/Icons';
 
 export default function AuditLog() {
   const [entityType, setEntityType] = useState('');
@@ -83,7 +84,8 @@ export default function AuditLog() {
           onClick={handleExportCsv}
           className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-2 self-start sm:self-auto"
         >
-          <span>📥</span> Export Audit CSV
+          <IconExport className="w-4 h-4 text-gray-500" />
+          <span>Export Audit CSV</span>
         </button>
       </div>
 

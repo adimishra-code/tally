@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import PickOrderModal from '../components/PickOrderModal';
 import ShipOrderModal from '../components/ShipOrderModal';
+import { IconExport, IconPackage, IconTruck, IconClipboard } from '../components/Icons';
 
 export default function SalesOrders() {
   const queryClient = useQueryClient();
@@ -196,7 +197,8 @@ export default function SalesOrders() {
               onClick={handleExportCsv}
               className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-1.5"
             >
-              <span>📥</span> Export CSV
+              <IconExport className="w-4 h-4 text-gray-500" />
+              <span>Export CSV</span>
             </button>
           )}
           <button
@@ -416,7 +418,8 @@ export default function SalesOrders() {
                         onClick={() => setPickingSo(so)}
                         className="px-3.5 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
                       >
-                        <span>📦</span> Pick Items
+                        <IconPackage className="w-4 h-4" />
+                        <span>Pick Items</span>
                       </button>
                     )}
 
@@ -425,7 +428,8 @@ export default function SalesOrders() {
                         onClick={() => setShippingSo(so)}
                         className="px-3.5 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
                       >
-                        <span>🚚</span> Ship Order
+                        <IconTruck className="w-4 h-4" />
+                        <span>Ship Order</span>
                       </button>
                     )}
 
@@ -434,7 +438,8 @@ export default function SalesOrders() {
                         onClick={() => setViewingShipmentsSo(so)}
                         className="px-3.5 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors flex items-center gap-1.5"
                       >
-                        <span>📋</span> Shipments Tracking
+                        <IconClipboard className="w-4 h-4 text-gray-500" />
+                        <span>Shipments Tracking</span>
                       </button>
                     )}
 

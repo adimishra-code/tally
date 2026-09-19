@@ -3,6 +3,17 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '../lib/api';
 import BarcodeScannerModal from '../components/BarcodeScannerModal';
+import {
+  IconPackage,
+  IconValuation,
+  IconInbox,
+  IconTruck,
+  IconBell,
+  IconScan,
+  IconAlertCircle,
+  IconCheckCircle,
+  IconBuilding,
+} from '../components/Icons';
 
 export default function Dashboard() {
   const [showScanner, setShowScanner] = useState(false);
@@ -21,7 +32,7 @@ export default function Dashboard() {
       label: 'Catalog Products',
       value: summary?.totalProducts ?? 0,
       subtext: `${summary?.totalWarehouses ?? 0} active locations`,
-      icon: '📦',
+      icon: <IconPackage className="w-5 h-5 text-blue-600" />,
       color: 'from-blue-500 to-blue-600',
       link: '/products',
     },
@@ -29,7 +40,7 @@ export default function Dashboard() {
       label: 'Inventory Value',
       value: summary?.totalValuation != null ? `$${Math.round(summary.totalValuation).toLocaleString()}` : '$0',
       subtext: `${summary?.lowStockCount ?? 0} items at reorder point`,
-      icon: '💎',
+      icon: <IconValuation className="w-5 h-5 text-amber-600" />,
       color: 'from-amber-500 to-amber-600',
       link: '/inventory',
     },
@@ -37,7 +48,7 @@ export default function Dashboard() {
       label: 'Inbound POs',
       value: summary?.openPOs ?? 0,
       subtext: `${summary?.pendingApprovals ?? 0} pending approval`,
-      icon: '📥',
+      icon: <IconInbox className="w-5 h-5 text-emerald-600" />,
       color: 'from-emerald-500 to-emerald-600',
       link: '/purchase-orders',
     },
@@ -45,7 +56,7 @@ export default function Dashboard() {
       label: 'Outbound SOs',
       value: summary?.openSOs ?? 0,
       subtext: `${summary?.readyToPick ?? 0} to pick • ${summary?.readyToShip ?? 0} to ship`,
-      icon: '📤',
+      icon: <IconTruck className="w-5 h-5 text-purple-600" />,
       color: 'from-purple-500 to-purple-600',
       link: '/sales-orders',
     },
@@ -53,8 +64,8 @@ export default function Dashboard() {
       label: 'Active Alerts',
       value: summary?.activeAlertsCount ?? 0,
       subtext: 'Stock & SLA notices',
-      icon: '🔔',
-      color: 'from-amber-500 to-amber-600',
+      icon: <IconBell className="w-5 h-5 text-rose-600" />,
+      color: 'from-rose-500 to-rose-600',
       link: '/alerts',
     },
   ];
@@ -72,34 +83,36 @@ export default function Dashboard() {
             onClick={() => setShowScanner(true)}
             className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all shadow-sm text-sm flex items-center gap-2"
           >
-            <span>⚡</span> Scan Barcode
+            <IconScan className="w-4 h-4 text-gray-500" />
+            <span>Scan Barcode</span>
           </button>
           <Link
             to="/inventory"
             className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-sm text-sm flex items-center gap-1.5"
           >
-            <span>📦</span> Stock Ledger
+            <IconPackage className="w-4 h-4" />
+            <span>Stock Ledger</span>
           </Link>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
         {kpis.map((kpi) => (
           <Link
             key={kpi.label}
             to={kpi.link}
-            className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 relative overflow-hidden group"
+            className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:shadow-md hover:border-slate-300 transition-all hover:-translate-y-0.5 relative overflow-hidden group"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{kpi.label}</p>
-                <p className="text-3xl font-black text-gray-900 mt-1">
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{kpi.label}</p>
+                <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1.5">
                   {isLoading ? '...' : kpi.value}
                 </p>
-                <p className="text-xs text-gray-500 mt-1 font-medium">{kpi.subtext}</p>
+                <p className="text-xs text-slate-500 mt-1 font-medium">{kpi.subtext}</p>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
                 {kpi.icon}
               </div>
             </div>
@@ -113,7 +126,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🚚</span>
+              <IconTruck className="w-5 h-5 text-purple-600" />
               <h3 className="font-bold text-gray-900 text-base">Outbound Fulfillment Funnel</h3>
             </div>
             <Link to="/sales-orders" className="text-xs text-blue-600 hover:text-blue-700 font-semibold">
@@ -147,7 +160,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="text-xl">📥</span>
+              <IconInbox className="w-5 h-5 text-emerald-600" />
               <h3 className="font-bold text-gray-900 text-base">Inbound Procurement Pipeline</h3>
             </div>
             <Link to="/purchase-orders" className="text-xs text-blue-600 hover:text-blue-700 font-semibold">
@@ -183,7 +196,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🚨</span>
+              <IconAlertCircle className="w-5 h-5 text-red-500" />
               <h3 className="font-bold text-gray-900 text-base">Active Operational Alerts</h3>
             </div>
             <Link to="/alerts" className="text-xs text-blue-600 hover:text-blue-700 font-semibold">
@@ -193,8 +206,9 @@ export default function Dashboard() {
 
           <div className="space-y-2.5">
             {!summary?.activeAlerts || summary.activeAlerts.length === 0 ? (
-              <div className="p-8 text-center text-gray-400 text-sm">
-                ✅ All systems operating normally. No active alerts.
+              <div className="p-8 text-center text-emerald-600 text-sm flex items-center justify-center gap-2">
+                <IconCheckCircle className="w-5 h-5" />
+                <span>All systems operating normally. No active alerts.</span>
               </div>
             ) : (
               summary.activeAlerts.slice(0, 5).map((alert: any) => (
@@ -274,31 +288,39 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
           <Link
             to="/purchase-orders"
-            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-1.5 border border-white/10"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-2 border border-white/10 flex flex-col items-center justify-center group"
           >
-            <span className="text-2xl block">📥</span>
-            <span className="text-xs font-semibold block">Create PO</span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <IconInbox className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold block text-slate-200">Create PO</span>
           </Link>
           <Link
             to="/sales-orders"
-            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-1.5 border border-white/10"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-2 border border-white/10 flex flex-col items-center justify-center group"
           >
-            <span className="text-2xl block">📤</span>
-            <span className="text-xs font-semibold block">Fulfill SO</span>
+            <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <IconTruck className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold block text-slate-200">Fulfill SO</span>
           </Link>
           <Link
             to="/inventory"
-            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-1.5 border border-white/10"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-2 border border-white/10 flex flex-col items-center justify-center group"
           >
-            <span className="text-2xl block">📦</span>
-            <span className="text-xs font-semibold block">Adjust Stock</span>
+            <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <IconPackage className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold block text-slate-200">Adjust Stock</span>
           </Link>
           <Link
             to="/warehouses"
-            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-1.5 border border-white/10"
+            className="p-4 rounded-2xl bg-white/10 hover:bg-white/15 backdrop-blur-md transition-all text-center space-y-2 border border-white/10 flex flex-col items-center justify-center group"
           >
-            <span className="text-2xl block">🏢</span>
-            <span className="text-xs font-semibold block">Manage Bins</span>
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <IconBuilding className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold block text-slate-200">Manage Bins</span>
           </Link>
         </div>
       </div>

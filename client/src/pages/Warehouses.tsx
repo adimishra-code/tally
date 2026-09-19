@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Warehouse, Bin } from '../types';
+import { IconBuilding } from '../components/Icons';
 
 export default function Warehouses() {
   const queryClient = useQueryClient();
@@ -254,8 +255,8 @@ export default function Warehouses() {
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold">
-                      🏢
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                      <IconBuilding className="w-5 h-5" />
                     </div>
                     <div>
                       <h3 className="font-bold text-gray-900 text-lg">{wh.name}</h3>

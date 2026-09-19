@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
+import { IconTruck, IconClose } from './Icons';
 
 interface ShipOrderModalProps {
   so: any;
@@ -105,7 +106,9 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
         <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
           <div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">🚚</span>
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <IconTruck className="w-5 h-5" />
+              </div>
               <h3 className="text-xl font-bold text-gray-900">
                 Dispatch Shipment: <span className="font-mono text-blue-600">{so.orderNumber}</span>
               </h3>
@@ -117,9 +120,9 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 rounded-md"
+            className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            ✕
+            <IconClose className="w-5 h-5" />
           </button>
         </div>
 

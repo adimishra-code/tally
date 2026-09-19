@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
+import { IconPackage, IconClose } from './Icons';
 
 interface PickOrderModalProps {
   so: any;
@@ -99,7 +100,9 @@ export default function PickOrderModal({ so, onClose, onSuccess }: PickOrderModa
         <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
           <div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">📦</span>
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                <IconPackage className="w-5 h-5" />
+              </div>
               <h3 className="text-xl font-bold text-gray-900">
                 Pick Order: <span className="font-mono text-blue-600">{so.orderNumber}</span>
               </h3>
@@ -111,9 +114,9 @@ export default function PickOrderModal({ so, onClose, onSuccess }: PickOrderModa
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-lg font-bold p-1 rounded-md"
+            className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            ✕
+            <IconClose className="w-5 h-5" />
           </button>
         </div>
 

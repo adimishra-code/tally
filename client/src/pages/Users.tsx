@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
+import { IconExport } from '../components/Icons';
 
 export default function Users() {
   const queryClient = useQueryClient();
@@ -163,7 +164,8 @@ export default function Users() {
             onClick={exportUsersCSV}
             className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
           >
-            <span>📥</span> Export CSV
+            <IconExport className="w-4 h-4 text-gray-500" />
+            <span>Export CSV</span>
           </button>
           <button
             onClick={() => setShowForm(!showForm)}

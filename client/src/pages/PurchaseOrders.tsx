@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import api from '../lib/api';
 import ReceiveGoodsModal from '../components/ReceiveGoodsModal';
 import BarcodeScannerModal from '../components/BarcodeScannerModal';
+import { IconExport, IconScan, IconInbox } from '../components/Icons';
 
 export default function PurchaseOrders() {
   const queryClient = useQueryClient();
@@ -187,14 +188,16 @@ export default function PurchaseOrders() {
               onClick={handleExportCsv}
               className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-1.5"
             >
-              <span>📥</span> Export CSV
+              <IconExport className="w-4 h-4 text-gray-500" />
+              <span>Export CSV</span>
             </button>
           )}
           <button
             onClick={() => setShowScanner(true)}
             className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-2"
           >
-            <span>⚡</span> Scan Barcode
+            <IconScan className="w-4 h-4 text-gray-500" />
+            <span>Scan Barcode</span>
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -414,7 +417,8 @@ export default function PurchaseOrders() {
                         onClick={() => setReceivingPo(po)}
                         className="px-3.5 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
                       >
-                        <span>📥</span> Receive Goods
+                        <IconInbox className="w-4 h-4" />
+                        <span>Receive Goods</span>
                       </button>
                     )}
                     {getNextActions(po.status).map((action) => (

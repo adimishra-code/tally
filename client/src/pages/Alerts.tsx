@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Alert } from '../types';
+import { IconExport, IconAlertCircle, IconAlertTriangle, IconClipboard, IconPackage } from '../components/Icons';
 
 export default function Alerts() {
   const queryClient = useQueryClient();
@@ -130,13 +131,18 @@ export default function Alerts() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'LOW_STOCK':
-        return '⚠️';
+        return <IconPackage className="w-4 h-4 text-amber-500" />;
       case 'EXPIRY_WARNING':
-        return '⏰';
+        return (
+          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+        );
       case 'SLA_BREACH':
-        return '🚨';
+        return <IconAlertCircle className="w-4 h-4 text-red-500" />;
       default:
-        return '📢';
+        return <IconAlertTriangle className="w-4 h-4 text-blue-500" />;
     }
   };
 
@@ -153,7 +159,8 @@ export default function Alerts() {
             onClick={exportAlertsCSV}
             className="px-3.5 py-2 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-1.5"
           >
-            <span>📥</span> Export CSV
+            <IconExport className="w-4 h-4 text-gray-500" />
+            <span>Export CSV</span>
           </button>
           {activeAlerts.length > 0 && (
             <button
@@ -195,7 +202,9 @@ export default function Alerts() {
               </p>
               <p className="text-xs text-red-600/80 mt-1">Requires urgent action</p>
             </div>
-            <span className="text-3xl">🚨</span>
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+              <IconAlertCircle className="w-6 h-6" />
+            </div>
           </div>
         </div>
 
@@ -208,7 +217,9 @@ export default function Alerts() {
               </p>
               <p className="text-xs text-amber-700/80 mt-1">Approaching thresholds</p>
             </div>
-            <span className="text-3xl">⚠️</span>
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+              <IconAlertTriangle className="w-6 h-6" />
+            </div>
           </div>
         </div>
 
@@ -219,7 +230,9 @@ export default function Alerts() {
               <p className="text-3xl font-extrabold text-blue-800 mt-1">{acknowledgedAlerts.length}</p>
               <p className="text-xs text-blue-700/80 mt-1">Under investigation</p>
             </div>
-            <span className="text-3xl">📋</span>
+            <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+              <IconClipboard className="w-6 h-6" />
+            </div>
           </div>
         </div>
       </div>
@@ -227,7 +240,11 @@ export default function Alerts() {
       {/* Search & Filter Bar */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="relative flex-1 w-full">
-          <span className="absolute left-3.5 top-2.5 text-gray-400 text-sm">🔍</span>
+          <span className="absolute left-3.5 top-2.5 text-gray-400">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
           <input
             type="text"
             placeholder="Search alerts by message, SKU, product, or warehouse..."
@@ -241,9 +258,9 @@ export default function Alerts() {
           <div className="flex items-center gap-1 flex-wrap">
             {[
               { label: 'All Types', key: 'ALL' },
-              { label: '⚠️ Low Stock', key: 'LOW_STOCK' },
-              { label: '⏰ Expiry', key: 'EXPIRY_WARNING' },
-              { label: '🚨 SLA', key: 'SLA_BREACH' },
+              { label: 'Low Stock', key: 'LOW_STOCK' },
+              { label: 'Expiry Warning', key: 'EXPIRY_WARNING' },
+              { label: 'SLA Breach', key: 'SLA_BREACH' },
             ].map((tab) => (
               <button
                 key={tab.key}
