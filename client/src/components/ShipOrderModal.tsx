@@ -100,27 +100,29 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-100">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+        <div className="p-6 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
           <div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                 <IconTruck className="w-5 h-5" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">
-                Dispatch Shipment: <span className="font-mono text-blue-600">{so.orderNumber}</span>
-              </h3>
+              <div>
+                <h3 className="text-lg font-bold text-white tracking-tight">
+                  Dispatch Shipment: <span className="font-mono text-cyan-400">{so.orderNumber}</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Customer: <span className="font-medium text-slate-200">{so.customerName}</span> • Warehouse:{' '}
+                  <span className="font-medium text-slate-200">{so.warehouseId?.name || 'Warehouse'}</span>
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Customer: <span className="font-medium text-gray-800">{so.customerName}</span> • Warehouse:{' '}
-              <span className="font-medium text-gray-800">{so.warehouseId?.name || 'Warehouse'}</span>
-            </p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800/80 transition-colors"
           >
             <IconClose className="w-5 h-5" />
           </button>
@@ -128,27 +130,27 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
                 Logistics Carrier*
               </label>
               <select
                 value={carrier}
                 onChange={(e) => setCarrier(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white font-medium"
               >
-                <option value="FedEx">FedEx</option>
-                <option value="UPS">UPS</option>
-                <option value="DHL">DHL Express</option>
-                <option value="USPS">USPS</option>
-                <option value="Blue Dart">Blue Dart</option>
-                <option value="Freight / Other">Freight / Other</option>
+                <option value="FedEx" className="bg-slate-900 text-white">FedEx</option>
+                <option value="UPS" className="bg-slate-900 text-white">UPS</option>
+                <option value="DHL" className="bg-slate-900 text-white">DHL Express</option>
+                <option value="USPS" className="bg-slate-900 text-white">USPS</option>
+                <option value="Blue Dart" className="bg-slate-900 text-white">Blue Dart</option>
+                <option value="Freight / Other" className="bg-slate-900 text-white">Freight / Other</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
                 Tracking / AWB Number
               </label>
               <input
@@ -156,27 +158,27 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
                 placeholder="e.g. TRK-987654321"
-                className="w-full px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono text-white placeholder-slate-500"
               />
             </div>
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between pb-1 border-b border-gray-100">
-              <h4 className="text-sm font-bold text-gray-800">Select Items to Ship</h4>
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Select Items to Ship</h4>
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleShipAll}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  className="text-xs font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
                 >
                   Ship All Picked
                 </button>
-                <span className="text-gray-300">|</span>
+                <span className="text-slate-700">|</span>
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                  className="text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
                 >
                   Clear
                 </button>
@@ -185,31 +187,31 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
             {lines.map((line, index) => (
               <div
                 key={line.productId}
-                className="p-4 rounded-xl border border-gray-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 rounded-xl border border-slate-800/80 bg-slate-950/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold bg-gray-100 px-2 py-0.5 rounded border border-gray-300">
+                    <span className="font-mono text-xs font-bold bg-slate-900 text-slate-200 px-2 py-0.5 rounded border border-slate-700">
                       {line.productSku}
                     </span>
-                    <span className="font-semibold text-gray-900">{line.productName}</span>
+                    <span className="font-semibold text-white">{line.productName}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1 flex gap-3">
-                    <span>Picked: <strong>{line.pickedQty}</strong></span>
-                    <span>Already Shipped: <strong>{line.alreadyShipped}</strong></span>
-                    <span className="text-blue-700 font-bold">Remaining to Ship: {line.remainingToShip}</span>
+                  <div className="text-xs text-slate-400 mt-1 flex gap-3">
+                    <span>Picked: <strong className="text-slate-200 font-mono">{line.pickedQty}</strong></span>
+                    <span>Already Shipped: <strong className="text-slate-200 font-mono">{line.alreadyShipped}</strong></span>
+                    <span className="text-cyan-400 font-bold font-mono">Remaining to Ship: {line.remainingToShip}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-semibold text-gray-700">Ship Qty:</label>
+                  <label className="text-xs font-semibold text-slate-300">Ship Qty:</label>
                   <input
                     type="number"
                     min="0"
                     max={line.remainingToShip}
                     value={line.shippedQty}
                     onChange={(e) => updateShippedQty(index, parseInt(e.target.value) || 0)}
-                    className="w-24 px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-center"
+                    className="w-24 px-3 py-1.5 text-sm bg-slate-900 border border-slate-700 rounded-lg focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono font-bold text-center text-white"
                     required
                   />
                 </div>
@@ -217,22 +219,22 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
             ))}
           </div>
 
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-            <p className="text-xs text-gray-500">
-              Generates an immutable <code className="font-mono text-gray-800">Shipment</code> audit record and updates delivery tracking.
+          <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-xs text-slate-400">
+              Generates an immutable <code className="font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Shipment</code> audit record and updates delivery tracking.
             </p>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={shipMutation.isPending}
-                className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 text-sm"
               >
                 {shipMutation.isPending ? 'Generating Shipment...' : 'Confirm Shipment'}
               </button>

@@ -44,16 +44,16 @@ export default function BarcodeScannerModal({ onClose }: BarcodeScannerModalProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">⚡</span>
-            <h3 className="text-lg font-bold text-gray-900">Barcode & SKU Lookup</h3>
+    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-6 text-slate-100">
+        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xl">⚡</span>
+            <h3 className="text-base font-bold text-white tracking-tight">Barcode & SKU Lookup</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+            className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800/80 transition-colors"
           >
             ✕
           </button>
@@ -61,80 +61,80 @@ export default function BarcodeScannerModal({ onClose }: BarcodeScannerModalProp
 
         {/* Scan Input Form */}
         <form onSubmit={handleScanSubmit} className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-xs font-semibold text-slate-300">
             Scan Barcode or Type SKU
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <span className="absolute left-3.5 top-2.5 text-gray-400 text-base">🔍</span>
+              <span className="absolute left-3.5 top-2.5 text-slate-500 text-base">🔍</span>
               <input
                 ref={inputRef}
                 type="text"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value.toUpperCase())}
                 placeholder="e.g. SKU-PROD-001"
-                className="w-full pl-10 pr-4 py-2.5 font-mono font-semibold border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                className="w-full pl-10 pr-4 py-2.5 font-mono font-semibold bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none uppercase text-white placeholder-slate-500 text-sm"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={scanMutation.isPending}
-              className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+              className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
             >
               {scanMutation.isPending ? 'Searching...' : 'Scan'}
             </button>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-slate-500">
             Handheld optical scanners configured in keyboard wedge mode will trigger scan automatically on Enter.
           </p>
         </form>
 
         {/* Scanned Product Card */}
         {scannedProduct && (
-          <div className="bg-blue-50/50 border border-blue-200 rounded-xl p-4 space-y-3 animate-in fade-in duration-200">
+          <div className="bg-slate-950/70 border border-cyan-500/30 rounded-xl p-4 space-y-3 animate-in fade-in duration-200">
             <div className="flex items-start justify-between">
               <div>
-                <span className="font-mono text-xs font-bold bg-white px-2 py-0.5 rounded border border-blue-300 text-blue-800">
+                <span className="font-mono text-xs font-bold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">
                   {scannedProduct.sku}
                 </span>
-                <h4 className="font-bold text-gray-900 text-lg mt-1">{scannedProduct.name}</h4>
+                <h4 className="font-bold text-white text-base mt-1.5">{scannedProduct.name}</h4>
                 {scannedProduct.description && (
-                  <p className="text-xs text-gray-600 mt-0.5">{scannedProduct.description}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{scannedProduct.description}</p>
                 )}
               </div>
               <span
-                className={`px-2 py-0.5 text-xs font-bold rounded uppercase ${
-                  scannedProduct.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                className={`px-2.5 py-0.5 text-xs font-semibold rounded-full uppercase border ${
+                  scannedProduct.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'
                 }`}
               >
                 {scannedProduct.isActive ? 'Active' : 'Inactive'}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-blue-100 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/80 text-xs">
               <div>
-                <span className="text-gray-500 block">Cost Price</span>
-                <span className="font-bold text-gray-900">${scannedProduct.costPrice.toFixed(2)}</span>
+                <span className="text-slate-400 block text-[11px]">Cost Price</span>
+                <span className="font-bold font-mono text-slate-200">${scannedProduct.costPrice.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Sell Price</span>
-                <span className="font-bold text-gray-900">${scannedProduct.sellPrice.toFixed(2)}</span>
+                <span className="text-slate-400 block text-[11px]">Sell Price</span>
+                <span className="font-bold font-mono text-slate-200">${scannedProduct.sellPrice.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Reorder Point</span>
-                <span className="font-bold text-gray-900">{scannedProduct.reorderPoint} {scannedProduct.unit}</span>
+                <span className="text-slate-400 block text-[11px]">Reorder Point</span>
+                <span className="font-bold font-mono text-slate-200">{scannedProduct.reorderPoint} {scannedProduct.unit}</span>
               </div>
               <div>
-                <span className="text-gray-500 block">Reorder Qty</span>
-                <span className="font-bold text-gray-900">{scannedProduct.reorderQty} {scannedProduct.unit}</span>
+                <span className="text-slate-400 block text-[11px]">Reorder Qty</span>
+                <span className="font-bold font-mono text-slate-200">{scannedProduct.reorderQty} {scannedProduct.unit}</span>
               </div>
             </div>
 
             {/* Warehouse Stock Levels */}
-            <div className="pt-2 border-t border-blue-100">
-              <span className="text-xs font-semibold text-gray-700 mb-2 block">Warehouse Availability:</span>
-              <div className="space-y-1">
+            <div className="pt-2 border-t border-slate-800/80">
+              <span className="text-xs font-semibold text-slate-300 mb-2 block">Warehouse Availability:</span>
+              <div className="space-y-1.5">
                 {warehouses?.map((wh) => (
                   <WarehouseStockRow
                     key={wh._id}
@@ -152,7 +152,7 @@ export default function BarcodeScannerModal({ onClose }: BarcodeScannerModalProp
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            className="px-5 py-2 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
           >
             Done
           </button>
@@ -180,9 +180,9 @@ function WarehouseStockRow({
   });
 
   return (
-    <div className="flex items-center justify-between text-xs bg-white px-2.5 py-1.5 rounded border border-gray-200">
-      <span className="text-gray-700 font-medium">{warehouseName}</span>
-      <span className="font-bold text-blue-700">
+    <div className="flex items-center justify-between text-xs bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800">
+      <span className="text-slate-300 font-medium">{warehouseName}</span>
+      <span className="font-bold font-mono text-cyan-400">
         {data !== undefined ? `${data.balance} on hand` : 'Checking...'}
       </span>
     </div>

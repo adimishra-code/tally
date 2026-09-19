@@ -138,23 +138,23 @@ export default function PurchaseOrders() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'DRAFT':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-800 text-slate-300 border-slate-700';
       case 'PENDING_APPROVAL':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
       case 'APPROVED':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-500/15 text-blue-300 border-blue-500/30';
       case 'SENT':
-        return 'bg-indigo-100 text-indigo-800';
+        return 'bg-purple-500/15 text-purple-300 border-purple-500/30';
       case 'PARTIALLY_RECEIVED':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-500/15 text-orange-300 border-orange-500/30';
       case 'RECEIVED':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
       case 'CLOSED':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-800 text-slate-400 border-slate-700';
       case 'CANCELLED':
-        return 'bg-red-100 text-red-800';
+        return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-800 text-slate-400 border-slate-700';
     }
   };
 
@@ -179,29 +179,29 @@ export default function PurchaseOrders() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">Purchase Orders</h2>
-          <p className="text-gray-600">Inbound procurement and stock receiving</p>
+          <h2 className="text-3xl font-extrabold text-white tracking-tight">Purchase Orders</h2>
+          <p className="text-slate-400 text-sm mt-0.5">Inbound procurement and stock receiving</p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap">
           {pos && pos.length > 0 && (
             <button
               onClick={handleExportCsv}
-              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-1.5"
             >
-              <IconExport className="w-4 h-4 text-gray-500" />
+              <IconExport className="w-4 h-4 text-slate-400" />
               <span>Export CSV</span>
             </button>
           )}
           <button
             onClick={() => setShowScanner(true)}
-            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-2"
+            className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-2"
           >
-            <IconScan className="w-4 h-4 text-gray-500" />
+            <IconScan className="w-4 h-4 text-slate-400" />
             <span>Scan Barcode</span>
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm"
+            className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-500/25 text-sm"
           >
             {showForm ? 'Cancel' : '+ New Purchase Order'}
           </button>
@@ -210,45 +210,45 @@ export default function PurchaseOrders() {
 
       {/* KPI Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Orders</div>
-          <div className="text-2xl font-bold text-gray-900">{pos?.length || 0}</div>
-          <div className="text-xs text-gray-400 mt-1">Active & historical POs</div>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Orders</div>
+          <div className="text-2xl sm:text-3xl font-black text-white">{pos?.length || 0}</div>
+          <div className="text-xs text-slate-400 mt-1">Active & historical POs</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Value</div>
-          <div className="text-2xl font-bold text-blue-600">${totalSpend.toFixed(2)}</div>
-          <div className="text-xs text-gray-400 mt-1">Committed procurement spend</div>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Value</div>
+          <div className="text-2xl sm:text-3xl font-black text-blue-400 font-mono">${totalSpend.toFixed(2)}</div>
+          <div className="text-xs text-slate-400 mt-1">Committed procurement spend</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Pending Approval</div>
-          <div className="text-2xl font-bold text-amber-600">{pendingActionCount}</div>
-          <div className="text-xs text-gray-400 mt-1">Awaiting procurement sign-off</div>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Pending Approval</div>
+          <div className="text-2xl sm:text-3xl font-black text-amber-400">{pendingActionCount}</div>
+          <div className="text-xs text-slate-400 mt-1">Awaiting procurement sign-off</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">In Fulfillment</div>
-          <div className="text-2xl font-bold text-indigo-600">{inFulfillmentCount}</div>
-          <div className="text-xs text-gray-400 mt-1">Approved, Sent, Partial ({receivedCount} done)</div>
+        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">In Fulfillment</div>
+          <div className="text-2xl sm:text-3xl font-black text-indigo-400">{inFulfillmentCount}</div>
+          <div className="text-xs text-slate-400 mt-1">{receivedCount} received & closed</div>
         </div>
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center gap-3">
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-4 flex flex-col md:flex-row items-center gap-3 shadow-md shadow-black/20">
         <div className="relative flex-1 w-full">
-          <span className="absolute left-3.5 top-2.5 text-gray-400">🔍</span>
+          <span className="absolute left-3.5 top-3 text-slate-500">🔍</span>
           <input
             type="text"
             placeholder="Search by PO number or supplier name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
           />
         </div>
         <div className="w-full md:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-56 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium bg-white text-gray-700"
+            className="w-full md:w-56 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium"
           >
             <option value="">All Statuses</option>
             <option value="DRAFT">Draft</option>
@@ -265,26 +265,27 @@ export default function PurchaseOrders() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">New Purchase Order</h3>
+        <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 space-y-4 shadow-xl shadow-black/25 text-white">
+          <h3 className="text-lg font-bold text-white mb-2">New Purchase Order</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Supplier Name*</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Supplier Name*</label>
                 <input
                   type="text"
                   value={formData.supplierName}
                   onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g. Acme Industrial Supply"
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Warehouse*</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Warehouse*</label>
                 <select
                   value={formData.warehouseId}
                   onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                   required
                 >
                   <option value="">Select warehouse...</option>
@@ -299,11 +300,11 @@ export default function PurchaseOrders() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-gray-700">Line Items*</label>
+                <label className="block text-xs font-semibold text-slate-300">Line Items*</label>
                 <button
                   type="button"
                   onClick={addLine}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-xs text-blue-400 hover:text-blue-300 font-semibold"
                 >
                   + Add Line
                 </button>
@@ -314,7 +315,7 @@ export default function PurchaseOrders() {
                     <select
                       value={line.productId}
                       onChange={(e) => updateLine(index, 'productId', e.target.value)}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
                       required
                     >
                       <option value="">Select product...</option>
@@ -330,7 +331,7 @@ export default function PurchaseOrders() {
                       value={line.orderedQty}
                       onChange={(e) => updateLine(index, 'orderedQty', parseInt(e.target.value))}
                       placeholder="Qty"
-                      className="w-24 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-24 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-mono"
                       required
                     />
                     <input
@@ -340,14 +341,14 @@ export default function PurchaseOrders() {
                       value={line.unitCost}
                       onChange={(e) => updateLine(index, 'unitCost', parseFloat(e.target.value))}
                       placeholder="Unit Cost"
-                      className="w-32 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-32 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-mono"
                       required
                     />
                     {formData.lines.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeLine(index)}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="px-3 py-2 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors"
                       >
                         ✕
                       </button>
@@ -360,7 +361,7 @@ export default function PurchaseOrders() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-500/25 disabled:opacity-50 text-sm"
             >
               {createMutation.isPending ? 'Creating...' : 'Create Purchase Order'}
             </button>
@@ -369,45 +370,49 @@ export default function PurchaseOrders() {
       )}
 
       {/* PO List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 overflow-hidden shadow-md shadow-black/20">
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">Loading purchase orders...</div>
+          <div className="p-12 text-center text-slate-500">Loading purchase orders...</div>
         ) : !pos || pos.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">No purchase orders found</div>
+          <div className="p-12 text-center text-slate-500">No purchase orders found</div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-slate-800/50">
             {pos.map((po: any) => {
               const total = po.lines.reduce((sum: number, line: any) => sum + line.orderedQty * line.unitCost, 0);
               return (
-                <div key={po._id} className="p-6 hover:bg-gray-50">
+                <div key={po._id} className="p-6 hover:bg-slate-800/40 transition-colors">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{po.poNumber}</h3>
-                        <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${getStatusColor(po.status)}`}>
+                        <h3 className="text-lg font-bold text-white font-mono">{po.poNumber}</h3>
+                        <span className={`px-2.5 py-1 text-xs font-bold rounded-lg uppercase border ${getStatusColor(po.status)}`}>
                           {po.status.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        Supplier: <span className="font-medium">{po.supplierName}</span> • Created:{' '}
+                      <p className="text-xs text-slate-400">
+                        Supplier: <span className="font-semibold text-slate-200">{po.supplierName}</span> • Created:{' '}
                         {new Date(po.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</div>
-                      <div className="text-xs text-gray-500">{po.lines.length} items</div>
+                      <div className="text-2xl font-black text-emerald-400 font-mono">${total.toFixed(2)}</div>
+                      <div className="text-xs text-slate-400">{po.lines.length} items</div>
                     </div>
                   </div>
 
                   {/* Lines Preview */}
-                  <div className="mb-3 text-sm text-gray-600">
+                  <div className="mb-4 text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 space-y-1 font-mono">
                     {po.lines.slice(0, 2).map((line: any, idx: number) => (
-                      <div key={idx}>
-                        • {line.orderedQty} × {line.productId?.name || 'Product'} @ ${line.unitCost}
-                        {line.receivedQty > 0 && ` (${line.receivedQty} received)`}
+                      <div key={idx} className="flex items-center justify-between">
+                        <span>
+                          • {line.orderedQty} × {line.productId?.name || 'Product'} @ ${line.unitCost}
+                        </span>
+                        {line.receivedQty > 0 && (
+                          <span className="text-emerald-400 font-bold">({line.receivedQty} received)</span>
+                        )}
                       </div>
                     ))}
-                    {po.lines.length > 2 && <div className="text-gray-500">+ {po.lines.length - 2} more...</div>}
+                    {po.lines.length > 2 && <div className="text-slate-500">+ {po.lines.length - 2} more...</div>}
                   </div>
 
                   {/* Actions */}
@@ -415,7 +420,7 @@ export default function PurchaseOrders() {
                     {canReceiveGoods(po.status) && (
                       <button
                         onClick={() => setReceivingPo(po)}
-                        className="px-3.5 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                        className="px-3.5 py-1.5 text-xs bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
                       >
                         <IconInbox className="w-4 h-4" />
                         <span>Receive Goods</span>
@@ -426,7 +431,7 @@ export default function PurchaseOrders() {
                         key={action}
                         onClick={() => transitionMutation.mutate({ id: po._id, nextStatus: action })}
                         disabled={transitionMutation.isPending}
-                        className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+                        className="px-3 py-1.5 text-xs bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 font-semibold rounded-lg transition-colors disabled:opacity-50"
                       >
                         {action.replace(/_/g, ' ')}
                       </button>
