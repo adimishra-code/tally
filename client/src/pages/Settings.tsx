@@ -46,7 +46,7 @@ export default function Settings() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto py-12 text-center text-gray-500">
+      <div className="max-w-4xl mx-auto py-16 text-center text-slate-500">
         Loading organization settings...
       </div>
     );
@@ -55,51 +55,51 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Organization Settings</h2>
-        <p className="text-gray-600">Manage business policies, approval thresholds, and workspace metadata</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Organization Settings</h2>
+        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Manage business policies, approval thresholds, and workspace metadata</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+      <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 p-8 shadow-xl text-slate-100">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="border-b border-gray-100 pb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Profile</h3>
+          <div className="border-b border-slate-800/80 pb-6">
+            <h3 className="text-base font-bold text-white mb-4">Company Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Company Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Organization Slug (Identifier)</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Organization Slug (Identifier)</label>
                 <input
                   type="text"
                   value={org?.slug || ''}
                   disabled
-                  className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 font-mono outline-none cursor-not-allowed"
+                  className="w-full px-4 py-2 bg-slate-950/40 border border-slate-800 rounded-xl text-slate-500 font-mono text-sm outline-none cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-400 mt-1">Used for employee logins to your tenant</p>
+                <p className="text-[11px] text-slate-500 mt-1">Used for employee logins to your tenant</p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-100 pb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Purchase Order Approval Policy</h3>
-            <p className="text-sm text-gray-500 mb-4">
+          <div className="border-b border-slate-800/80 pb-6">
+            <h3 className="text-base font-bold text-white mb-2">Purchase Order Approval Policy</h3>
+            <p className="text-xs text-slate-400 mb-4">
               POs with total value above this threshold will require explicit approval from an Owner or Admin before they can be sent to suppliers.
             </p>
 
             <div className="max-w-md">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
                 Approval Threshold ($ USD)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-gray-500 font-medium">$</span>
+                <span className="absolute left-3.5 top-2 text-slate-500 font-medium text-sm">$</span>
                 <input
                   type="number"
                   min="0"
@@ -108,7 +108,7 @@ export default function Settings() {
                   onChange={(e) =>
                     setFormData({ ...formData, poApprovalThreshold: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full pl-8 pr-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white font-mono text-sm"
                   required
                 />
               </div>
@@ -119,7 +119,7 @@ export default function Settings() {
             <button
               type="submit"
               disabled={updateMutation.isPending}
-              className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
             >
               {updateMutation.isPending ? 'Saving...' : 'Save Settings'}
             </button>

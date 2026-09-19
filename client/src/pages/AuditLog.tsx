@@ -58,18 +58,18 @@ export default function AuditLog() {
 
   const getActionBadge = (action: string) => {
     if (action.includes('CREATED') || action.includes('TRANSFER_IN')) {
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
     }
     if (action.includes('DELETED') || action.includes('CANCELLED') || action.includes('TRANSFER_OUT')) {
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
     }
     if (action.includes('APPROVED') || action.includes('SHIPPED')) {
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+      return 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20';
     }
     if (action.includes('ADJUSTED') || action.includes('PICKED')) {
-      return 'bg-amber-100 text-amber-800 border-amber-200';
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
     }
-    return 'bg-gray-100 text-gray-800 border-gray-200';
+    return 'bg-slate-800 text-slate-400 border-slate-700';
   };
 
   return (
@@ -77,30 +77,30 @@ export default function AuditLog() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">System Audit Trail</h2>
-          <p className="text-gray-600">Tamper-evident logs of entity mutations, status changes, and staff operations</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">System Audit Trail</h2>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Tamper-evident immutable logs of entity mutations, status changes, and staff operations</p>
         </div>
         <button
           onClick={handleExportCsv}
-          className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm text-sm flex items-center gap-2 self-start sm:self-auto"
+          className="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm text-xs flex items-center gap-2 self-start sm:self-auto"
         >
-          <IconExport className="w-4 h-4 text-gray-500" />
+          <IconExport className="w-4 h-4 text-slate-400" />
           <span>Export Audit CSV</span>
         </button>
       </div>
 
       {/* Filter Panel */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
+      <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Entity Domain</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Entity Domain</label>
             <select
               value={entityType}
               onChange={(e) => {
                 setEntityType(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-slate-200"
             >
               <option value="">All Entities</option>
               <option value="PurchaseOrder">Purchase Orders</option>
@@ -113,14 +113,14 @@ export default function AuditLog() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Action Type</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Action Type</label>
             <select
               value={actionFilter}
               onChange={(e) => {
                 setActionFilter(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-slate-200"
             >
               <option value="">All Actions</option>
               <option value="PO_CREATED">PO Created</option>
@@ -135,7 +135,7 @@ export default function AuditLog() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">From Date</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">From Date</label>
             <input
               type="date"
               value={startDate}
@@ -143,12 +143,12 @@ export default function AuditLog() {
                 setStartDate(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">To Date</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">To Date</label>
             <input
               type="date"
               value={endDate}
@@ -156,13 +156,13 @@ export default function AuditLog() {
                 setEndDate(e.target.value);
                 setPage(1);
               }}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full px-3 py-2 text-xs bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white font-mono"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs text-gray-500">
-          <span>Found <strong>{total}</strong> audit event(s) matching criteria</span>
+        <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400">
+          <span>Found <strong className="text-white font-mono">{total}</strong> audit event(s) matching criteria</span>
           <div className="flex items-center gap-2">
             <span>Rows per page:</span>
             <select
@@ -171,7 +171,7 @@ export default function AuditLog() {
                 setLimit(parseInt(e.target.value));
                 setPage(1);
               }}
-              className="px-2 py-1 border border-gray-300 rounded text-xs outline-none"
+              className="px-2 py-1 bg-slate-950 border border-slate-700 rounded-lg text-xs outline-none text-slate-200"
             >
               <option value={25}>25</option>
               <option value={50}>50</option>
@@ -182,35 +182,35 @@ export default function AuditLog() {
       </div>
 
       {/* Audit Log Entries List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 overflow-hidden shadow-xl">
         {isLoading ? (
-          <div className="p-12 text-center text-gray-500">Loading audit records...</div>
+          <div className="p-12 text-center text-slate-500">Loading audit records...</div>
         ) : !logs || logs.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">No audit records found matching your filters.</div>
+          <div className="p-12 text-center text-slate-400">No audit records found matching your filters.</div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-slate-800/60">
             {logs.map((log: any) => (
-              <div key={log._id} className="p-4 sm:p-5 hover:bg-gray-50 transition-colors">
+              <div key={log._id} className="p-4 sm:p-5 hover:bg-slate-800/40 transition-colors">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
-                        className={`text-xs font-bold px-2.5 py-0.5 rounded border uppercase ${getActionBadge(
+                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-md border uppercase font-mono ${getActionBadge(
                           log.action
                         )}`}
                       >
                         {log.action.replace(/_/g, ' ')}
                       </span>
-                      <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
+                      <span className="text-xs font-semibold text-slate-300 bg-slate-950/80 px-2 py-0.5 rounded border border-slate-800">
                         {log.entityType}
                       </span>
-                      <span className="text-xs font-mono text-gray-400">ID: {log.entityId}</span>
+                      <span className="text-xs font-mono text-slate-500">ID: {log.entityId}</span>
                     </div>
-                    <div className="text-xs text-gray-600">
-                      Actor: <strong className="text-gray-900">{log.userId?.name || 'System Auto-Job'}</strong>{' '}
-                      {log.userId?.email && <span className="text-gray-400">({log.userId.email})</span>}
+                    <div className="text-xs text-slate-400">
+                      Actor: <strong className="text-white">{log.userId?.name || 'System Auto-Job'}</strong>{' '}
+                      {log.userId?.email && <span className="text-slate-500 font-mono">({log.userId.email})</span>}
                       {log.userId?.role && (
-                        <span className="ml-1.5 px-1.5 py-0.2 bg-gray-100 text-gray-600 rounded text-[10px] uppercase font-bold">
+                        <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 text-slate-300 rounded text-[10px] uppercase font-bold border border-slate-700">
                           {log.userId.role}
                         </span>
                       )}
@@ -218,12 +218,12 @@ export default function AuditLog() {
                   </div>
 
                   <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-slate-500 font-mono">
                       {new Date(log.createdAt).toLocaleString()}
                     </span>
                     <button
                       onClick={() => setInspectLog(log)}
-                      className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-blue-50 text-gray-700 hover:text-blue-600 font-medium rounded transition-colors"
+                      className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-cyan-400 hover:text-cyan-300 font-semibold rounded-lg border border-slate-700 transition-colors"
                     >
                       Inspect Diff
                     </button>
@@ -232,20 +232,20 @@ export default function AuditLog() {
 
                 {/* Inline Diff Preview */}
                 {(log.before || log.after) && (
-                  <div className="mt-2 text-xs bg-gray-50 p-2.5 rounded-lg border border-gray-100 font-mono text-gray-700 space-y-1">
+                  <div className="mt-2 text-xs bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 font-mono text-slate-300 space-y-1">
                     {Object.keys(log.after || {}).map((key) => {
                       const beforeVal = log.before?.[key];
                       const afterVal = log.after?.[key];
                       if (JSON.stringify(beforeVal) === JSON.stringify(afterVal)) return null;
                       return (
                         <div key={key} className="truncate">
-                          <span className="font-semibold text-gray-900">{key}:</span>{' '}
+                          <span className="font-semibold text-slate-400">{key}:</span>{' '}
                           {beforeVal !== undefined && (
-                            <span className="text-red-600 line-through mr-1">
+                            <span className="text-rose-400 line-through mr-1">
                               {typeof beforeVal === 'object' ? JSON.stringify(beforeVal) : String(beforeVal)}
                             </span>
                           )}
-                          <span className="text-green-700 font-bold">
+                          <span className="text-emerald-400 font-bold">
                             {typeof afterVal === 'object' ? JSON.stringify(afterVal) : String(afterVal)}
                           </span>
                         </div>
@@ -260,22 +260,22 @@ export default function AuditLog() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between text-sm">
-            <span className="text-xs text-gray-600">
-              Page <strong>{page}</strong> of <strong>{totalPages}</strong> ({total} records)
+          <div className="p-4 border-t border-slate-800/80 bg-slate-950/60 flex items-center justify-between text-sm">
+            <span className="text-xs text-slate-400">
+              Page <strong className="text-white font-mono">{page}</strong> of <strong className="text-white font-mono">{totalPages}</strong> ({total} records)
             </span>
             <div className="flex gap-2">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 disabled:opacity-40 transition-colors"
               >
                 Previous
               </button>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 transition-colors"
+                className="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 disabled:opacity-40 transition-colors"
               >
                 Next
               </button>
@@ -286,20 +286,20 @@ export default function AuditLog() {
 
       {/* Inspect Changes Modal */}
       {inspectLog && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  Audit Snapshot: <span className="font-mono text-blue-600">{inspectLog.action}</span>
+                <h3 className="text-base font-bold text-white">
+                  Audit Snapshot: <span className="font-mono text-cyan-400">{inspectLog.action}</span>
                 </h3>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-slate-400 font-mono mt-0.5">
                   {inspectLog.entityType} ({inspectLog.entityId}) • {new Date(inspectLog.createdAt).toLocaleString()}
                 </p>
               </div>
               <button
                 onClick={() => setInspectLog(null)}
-                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
               >
                 ✕
               </button>
@@ -307,23 +307,23 @@ export default function AuditLog() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto flex-1">
               <div>
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">State Before</h4>
-                <pre className="text-xs font-mono bg-red-50/50 p-3 rounded-xl border border-red-200 overflow-x-auto text-red-900 max-h-72">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">State Before</h4>
+                <pre className="text-xs font-mono bg-rose-500/10 p-3 rounded-xl border border-rose-500/20 overflow-x-auto text-rose-300 max-h-72">
                   {JSON.stringify(inspectLog.before || {}, null, 2)}
                 </pre>
               </div>
               <div>
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">State After</h4>
-                <pre className="text-xs font-mono bg-green-50/50 p-3 rounded-xl border border-green-200 overflow-x-auto text-green-900 max-h-72">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">State After</h4>
+                <pre className="text-xs font-mono bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 overflow-x-auto text-emerald-300 max-h-72">
                   {JSON.stringify(inspectLog.after || {}, null, 2)}
                 </pre>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-gray-100 text-right">
+            <div className="pt-3 border-t border-slate-800/80 text-right">
               <button
                 onClick={() => setInspectLog(null)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl transition-colors text-xs"
               >
                 Close
               </button>

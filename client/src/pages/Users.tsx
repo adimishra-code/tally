@@ -142,34 +142,35 @@ export default function Users() {
 
   const getRoleBadge = (role: string) => {
     const colors: Record<string, string> = {
-      OWNER: 'bg-purple-100 text-purple-800',
-      ADMIN: 'bg-blue-100 text-blue-800',
-      PROCUREMENT: 'bg-green-100 text-green-800',
-      WAREHOUSE_STAFF: 'bg-yellow-100 text-yellow-800',
-      FINANCE: 'bg-pink-100 text-pink-800',
-      VIEWER: 'bg-gray-100 text-gray-800',
+      OWNER: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+      ADMIN: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+      PROCUREMENT: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      WAREHOUSE_STAFF: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+      FINANCE: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+      VIEWER: 'bg-slate-800 text-slate-400 border-slate-700',
     };
-    return colors[role] || 'bg-gray-100 text-gray-800';
+    return colors[role] || 'bg-slate-800 text-slate-400 border-slate-700';
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-1">User Management</h2>
-          <p className="text-gray-600 text-sm">Manage team members, roles, and security permissions</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">User Management</h2>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">Manage team members, roles, and granular security permissions</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={exportUsersCSV}
-            className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2"
+            className="px-4 py-2 bg-slate-900 border border-slate-700 text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-2"
           >
-            <IconExport className="w-4 h-4 text-gray-500" />
+            <IconExport className="w-4 h-4 text-slate-400" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            className="px-5 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20"
           >
             {showForm ? 'Cancel' : '+ Add User'}
           </button>
@@ -178,45 +179,45 @@ export default function Users() {
 
       {/* KPI Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Total Users</div>
-          <div className="text-2xl font-bold text-gray-900">{totalUsers}</div>
-          <div className="text-xs text-gray-400 mt-1">Configured accounts</div>
+        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Users</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-white">{totalUsers}</div>
+          <div className="text-xs text-slate-500 mt-1">Configured accounts</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Active Accounts</div>
-          <div className="text-2xl font-bold text-emerald-600">{activeCount}</div>
-          <div className="text-xs text-gray-400 mt-1">Authorized access</div>
+        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Active Accounts</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">{activeCount}</div>
+          <div className="text-xs text-slate-500 mt-1">Authorized access</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Admins & Owners</div>
-          <div className="text-2xl font-bold text-blue-600">{adminCount}</div>
-          <div className="text-xs text-gray-400 mt-1">Privileged managers</div>
+        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Admins & Owners</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-cyan-400">{adminCount}</div>
+          <div className="text-xs text-slate-500 mt-1">Privileged managers</div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">Warehouse Staff</div>
-          <div className="text-2xl font-bold text-amber-600">{staffCount}</div>
-          <div className="text-xs text-gray-400 mt-1">Operations team</div>
+        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Warehouse Staff</div>
+          <div className="text-2xl sm:text-3xl font-bold font-mono text-amber-400">{staffCount}</div>
+          <div className="text-xs text-slate-500 mt-1">Operations team</div>
         </div>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row items-center gap-3">
+      <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
-          <span className="absolute left-3.5 top-2.5 text-gray-400">🔍</span>
+          <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">🔍</span>
           <input
             type="text"
             placeholder="Search users by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2 bg-slate-950/60 border border-slate-800 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-sm text-white placeholder-slate-500"
           />
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-200 outline-none focus:border-cyan-500"
           >
             <option value="ALL">All Roles</option>
             <option value="OWNER">Owner</option>
@@ -226,27 +227,27 @@ export default function Users() {
             <option value="FINANCE">Finance</option>
             <option value="VIEWER">Viewer</option>
           </select>
-          <div className="flex items-center bg-gray-100 p-1 rounded-lg text-xs font-medium">
+          <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs font-medium">
             <button
               onClick={() => setStatusFilter('ALL')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                statusFilter === 'ALL' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              className={`px-3 py-1.5 rounded-lg transition-colors ${
+                statusFilter === 'ALL' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'
               }`}
             >
               All ({totalUsers})
             </button>
             <button
               onClick={() => setStatusFilter('ACTIVE')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                statusFilter === 'ACTIVE' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              className={`px-3 py-1.5 rounded-lg transition-colors ${
+                statusFilter === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300 shadow-sm' : 'text-slate-400 hover:text-white'
               }`}
             >
               Active ({activeCount})
             </button>
             <button
               onClick={() => setStatusFilter('INACTIVE')}
-              className={`px-3 py-1.5 rounded-md transition-colors ${
-                statusFilter === 'INACTIVE' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              className={`px-3 py-1.5 rounded-lg transition-colors ${
+                statusFilter === 'INACTIVE' ? 'bg-slate-800 text-slate-200 shadow-sm' : 'text-slate-400 hover:text-white'
               }`}
             >
               Inactive ({totalUsers - activeCount})
@@ -257,46 +258,46 @@ export default function Users() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">New User</h3>
+        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 text-slate-100 animate-in fade-in duration-200">
+          <h3 className="text-base font-bold text-white mb-4">New User</h3>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Name*</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Email*</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Password*</label>
               <input
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
                 required
                 minLength={8}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role*</label>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Role*</label>
               <select
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm font-medium"
               >
                 <option value="WAREHOUSE_STAFF">Warehouse Staff</option>
                 <option value="PROCUREMENT">Procurement</option>
@@ -309,7 +310,7 @@ export default function Users() {
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="w-full py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
               >
                 {createMutation.isPending ? 'Creating...' : 'Create User'}
               </button>
@@ -319,28 +320,28 @@ export default function Users() {
       )}
 
       {/* Users Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-slate-950/60 border-b border-slate-800/80">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3.5 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3.5 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-800/60">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                     Loading users...
                   </td>
                 </tr>
               ) : filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                     {searchTerm || roleFilter !== 'ALL' || statusFilter !== 'ALL'
                       ? 'No users match your filters'
                       : 'No users found'}
@@ -354,27 +355,27 @@ export default function Users() {
                     user.email === currentUser.email;
 
                   return (
-                    <tr key={user._id} className="hover:bg-gray-50">
+                    <tr key={user._id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">{user.name}</span>
+                          <span className="text-sm font-semibold text-white">{user.name}</span>
                           {isSelf && (
-                            <span className="px-1.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 rounded border border-blue-200">
+                            <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-cyan-500/10 text-cyan-400 rounded border border-cyan-500/30">
                               You
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                      <td className="px-6 py-4 text-xs font-mono text-slate-300">{user.email}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-bold rounded uppercase ${getRoleBadge(user.role)}`}>
+                        <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md border uppercase ${getRoleBadge(user.role)}`}>
                           {user.role.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span
-                          className={`px-2 py-1 text-xs font-bold rounded uppercase ${
-                            user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          className={`px-2.5 py-0.5 text-[11px] font-bold rounded-md border uppercase ${
+                            user.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                           }`}
                         >
                           {user.isActive ? 'Active' : 'Inactive'}
@@ -384,7 +385,7 @@ export default function Users() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => startEdit(user)}
-                            className="text-sm text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded hover:bg-blue-50 transition-colors"
+                            className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-slate-800/80 transition-colors"
                           >
                             Edit
                           </button>
@@ -396,7 +397,7 @@ export default function Users() {
                                     deactivateMutation.mutate(user._id);
                                   }
                                 }}
-                                className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+                                className="text-xs text-rose-400 hover:text-rose-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-slate-800/80 transition-colors"
                               >
                                 Deactivate
                               </button>
@@ -408,7 +409,7 @@ export default function Users() {
                                   updateMutation.mutate({ id: user._id, data: { isActive: true } });
                                 }
                               }}
-                              className="text-sm text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
+                              className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-slate-800/80 transition-colors"
                             >
                               Reactivate
                             </button>
@@ -426,34 +427,34 @@ export default function Users() {
 
       {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="text-lg font-bold text-gray-900">Edit User</h3>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <h3 className="text-base font-bold text-white">Edit User</h3>
               <button
                 onClick={() => setEditingUser(null)}
-                className="text-gray-400 hover:text-gray-600 text-lg font-bold"
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
               >
                 ✕
               </button>
             </div>
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name*</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Name*</label>
                 <input
                   type="text"
                   value={editFormData.name}
                   onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role*</label>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">Role*</label>
                 <select
                   value={editFormData.role}
                   onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm font-medium"
                 >
                   <option value="OWNER">Owner</option>
                   <option value="ADMIN">Admin</option>
@@ -464,15 +465,15 @@ export default function Users() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reset Password <span className="text-xs text-gray-400">(optional)</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Reset Password <span className="text-[11px] text-slate-500">(optional)</span>
                 </label>
                 <input
                   type="password"
                   placeholder="Leave empty to keep unchanged"
                   value={editFormData.password}
                   onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm placeholder-slate-500"
                   minLength={8}
                 />
               </div>
@@ -482,9 +483,9 @@ export default function Users() {
                   id="isActiveToggle"
                   checked={editFormData.isActive}
                   onChange={(e) => setEditFormData({ ...editFormData, isActive: e.target.checked })}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-4 h-4"
+                  className="rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-cyan-500 w-4 h-4"
                 />
-                <label htmlFor="isActiveToggle" className="text-sm font-medium text-gray-700">
+                <label htmlFor="isActiveToggle" className="text-xs font-medium text-slate-300">
                   Active Account
                 </label>
               </div>
@@ -492,14 +493,14 @@ export default function Users() {
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
-                  className="flex-1 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="flex-1 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
                 >
                   {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
                 </button>
