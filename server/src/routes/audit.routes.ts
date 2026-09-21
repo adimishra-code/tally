@@ -8,7 +8,7 @@ const router = Router();
 /**
  * GET /audit/export/csv - Export audit logs to CSV
  */
-router.get('/export/csv', requireAuth, async (req: Request, res: Response): Promise<void> => {
+router.get(['/export', '/export/csv'], requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const authReq = req as AuthRequest;
     const { action, entityType, startDate, endDate } = req.query;

@@ -5,11 +5,20 @@ import rateLimit from 'express-rate-limit';
 
 const router = Router();
 
-// Rate limiter for login endpoint (5 attempts per 15 minutes)
+// Rate limiter for login endpoint (30 attempts per 15 minutes per IP)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: { error: 'Too many login attempts, please try again later' },
+  max: 30,
+  message: { error: 'Too many login attempts. Please wait a few minutes and try again.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Rate limiter for signup endpoint (15 org creations per hour per IP)
+const signupLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 15,
+  message: { error: 'Too many account creation attempts. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -36,7 +45,7 @@ const refreshSchema = z.object({
  * POST /auth/signup
  * Creates a new organization + first user (OWNER role)
  */
-router.post('/signup', async (req: Request, res: Response): Promise<void> => {
+router.post('/signup', signupLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const data = signupSchema.parse(req.body);
     const result = await AuthService.signup(data);

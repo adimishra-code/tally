@@ -29,6 +29,76 @@ const transferStockSchema = z.object({
 });
 
 /**
+ * GET /stock/export - Export current inventory across warehouses to CSV
+ */
+router.get(
+  ['/export', '/export/csv'],
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authReq = req as AuthRequest;
+      const { warehouseId } = req.query;
+
+      let warehouseFilter: any = { orgId: authReq.orgId, isActive: true };
+      if (warehouseId && Types.ObjectId.isValid(warehouseId as string)) {
+        warehouseFilter._id = new Types.ObjectId(warehouseId as string);
+      }
+
+      const warehouses = await Warehouse.find(warehouseFilter);
+      const rows: string[][] = [];
+
+      for (const wh of warehouses) {
+        const inventory = await StockLedgerService.getWarehouseInventory(
+          authReq.orgId,
+          wh._id
+        );
+
+        for (const item of inventory) {
+          const isLowStock = item.balance <= item.reorderPoint && item.reorderPoint > 0;
+          rows.push([
+            `"${wh.name.replace(/"/g, '""')}"`,
+            `"${item.sku.replace(/"/g, '""')}"`,
+            `"${item.name.replace(/"/g, '""')}"`,
+            `"${item.unit || 'pcs'}"`,
+            `${item.balance}`,
+            `${(item.costPrice || 0).toFixed(2)}`,
+            `${(item.sellPrice || 0).toFixed(2)}`,
+            `${((item.balance || 0) * (item.costPrice || 0)).toFixed(2)}`,
+            `${item.reorderPoint || 0}`,
+            `"${isLowStock ? 'CRITICAL_LOW' : 'OPTIMAL'}"`,
+          ]);
+        }
+      }
+
+      const headers = [
+        'Warehouse',
+        'SKU',
+        'Product Name',
+        'Unit',
+        'Current Balance',
+        'Cost Price',
+        'Sell Price',
+        'Total Valuation',
+        'Reorder Point',
+        'Stock Health',
+      ];
+
+      const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="tally-inventory-export-${new Date().toISOString().split('T')[0]}.csv"`
+      );
+      res.send(csvContent);
+    } catch (error) {
+      console.error('Error exporting stock:', error);
+      res.status(500).json({ error: 'Internal server error during inventory export' });
+    }
+  }
+);
+
+/**
  * GET /stock/balance/:productId/:warehouseId - Get current stock balance
  */
 router.get(

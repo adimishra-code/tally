@@ -21,22 +21,88 @@ import binRoutes from './routes/bin.routes';
 import organizationRoutes from './routes/organization.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 
+import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
+
 dotenv.config();
 
 const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 4000;
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim());
 
 // Security middleware
 app.use(helmet());
-app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.includes('*') ||
+        origin.endsWith('.vercel.app')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Request tracing and duration logger
+app.use((req, res, next) => {
+  const reqId = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+  res.setHeader('X-Request-Id', reqId);
+  const start = Date.now();
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (process.env.NODE_ENV !== 'test' && !req.path.startsWith('/health')) {
+      const statusColor = res.statusCode >= 400 ? '⚠️' : '✓';
+      console.log(`${statusColor} [${req.method}] ${req.path} ${res.statusCode} - ${duration}ms (id: ${reqId.substring(0, 8)})`);
+    }
+  });
+
+  next();
+});
+
+// Global API rate limiter (protects server resources, skips health)
+const globalApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.path === '/health',
+  message: { error: 'Too many requests, please try again later' },
+});
+app.use('/api', globalApiLimiter);
+
+// Enhanced operational health check
+app.get('/health', async (_req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  const mem = process.memoryUsage();
+
+  const isHealthy = dbStatus === 'connected';
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? 'healthy' : 'degraded',
+    service: 'tally-warehouse-api',
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+    database: {
+      status: dbStatus,
+      name: mongoose.connection.name || 'unknown',
+    },
+    system: {
+      memoryRssMb: Math.round(mem.rss / 1024 / 1024),
+      memoryHeapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+      nodeVersion: process.version,
+    },
+  });
 });
 
 // Routes

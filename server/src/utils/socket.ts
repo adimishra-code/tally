@@ -5,11 +5,23 @@ import { verifyAccessToken, JWTPayload } from './jwt';
 let io: SocketIOServer | null = null;
 
 export const initSocket = (httpServer: HttpServer): SocketIOServer => {
-  const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+  const allowedOrigins = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((o) => o.trim());
 
   io = new SocketIOServer(httpServer, {
     cors: {
-      origin: CLIENT_ORIGIN,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (
+          allowedOrigins.includes(origin) ||
+          allowedOrigins.includes('*') ||
+          origin.endsWith('.vercel.app')
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, false);
+      },
       credentials: true,
     },
   });

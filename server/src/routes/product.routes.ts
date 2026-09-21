@@ -107,6 +107,77 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
 });
 
 /**
+ * GET /products/export - Export product catalog to CSV
+ */
+router.get(['/export', '/export/csv'], requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const products = await Product.find({ orgId: authReq.orgId }).sort({ sku: 1 });
+
+    const headers = [
+      'SKU',
+      'Product Name',
+      'Unit',
+      'Cost Price',
+      'Sell Price',
+      'Reorder Point',
+      'Reorder Quantity',
+      'Active Status',
+      'Description',
+    ];
+
+    const rows = products.map((p) => [
+      `"${p.sku.replace(/"/g, '""')}"`,
+      `"${p.name.replace(/"/g, '""')}"`,
+      `"${p.unit || 'pcs'}"`,
+      `${(p.costPrice || 0).toFixed(2)}`,
+      `${(p.sellPrice || 0).toFixed(2)}`,
+      `${p.reorderPoint || 0}`,
+      `${p.reorderQty || 0}`,
+      `"${p.isActive ? 'ACTIVE' : 'ARCHIVED'}"`,
+      `"${(p.description || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="tally-products-catalog-${new Date().toISOString().split('T')[0]}.csv"`
+    );
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Error exporting products:', error);
+    res.status(500).json({ error: 'Internal server error during product export' });
+  }
+});
+
+/**
+ * GET /products/barcode/:code or /products/scan/:code - High-speed barcode / SKU lookup
+ */
+router.get(['/barcode/:code', '/scan/:code'], requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const code = req.params.code.trim();
+
+    // Look up by SKU case-insensitively or exact
+    const product = await Product.findOne({
+      orgId: authReq.orgId,
+      sku: { $regex: new RegExp(`^${code}$`, 'i') },
+    });
+
+    if (!product) {
+      res.status(404).json({ error: `Product with barcode or SKU "${code}" not found` });
+      return;
+    }
+
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
  * GET /products/:id - Get a single product
  */
 router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
