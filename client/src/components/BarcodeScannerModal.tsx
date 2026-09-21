@@ -26,13 +26,22 @@ export default function BarcodeScannerModal({ onClose }: BarcodeScannerModalProp
   });
 
   const scanMutation = useMutation({
-    mutationFn: (code: string) => api.post('/receiving/barcode-lookup', { barcode: code }),
-    onSuccess: (res) => {
-      setScannedProduct(res.data);
-      toast.success(`Found product: ${res.data.name}`);
+    mutationFn: async (code: string) => {
+      try {
+        const res = await api.get(`/products/barcode/${encodeURIComponent(code)}`);
+        return res.data;
+      } catch (e) {
+        // Fallback to receiving barcode-lookup
+        const res = await api.post('/receiving/barcode-lookup', { barcode: code });
+        return res.data;
+      }
+    },
+    onSuccess: (data) => {
+      setScannedProduct(data);
+      toast.success(`Found SKU: ${data.sku}`);
     },
     onError: () => {
-      toast.error(`No active product found with SKU/barcode "${barcode}"`);
+      toast.error(`No catalog match found for "${barcode}"`);
       setScannedProduct(null);
     },
   });
@@ -44,96 +53,113 @@ export default function BarcodeScannerModal({ onClose }: BarcodeScannerModalProp
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-6 text-slate-100">
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-          <div className="flex items-center gap-2.5">
-            <span className="text-xl">⚡</span>
-            <h3 className="text-base font-bold text-white tracking-tight">Barcode & SKU Lookup</h3>
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-lg w-full p-6 space-y-5 text-zinc-100 relative">
+        {/* Terminal Header */}
+        <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 led-pulse-amber" />
+            <h3 className="text-sm font-bold text-zinc-100 tracking-tight font-mono uppercase">
+              Optical Barcode & SKU Scanner
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800/80 transition-colors"
+            className="text-zinc-400 hover:text-zinc-100 p-1 rounded hover:bg-[#1A1E26] transition-colors font-mono text-xs"
           >
-            ✕
+            [ESC]
           </button>
         </div>
 
+        {/* Viewfinder Graphic (Rugged Handheld HUD) */}
+        <div className="relative h-20 bg-[#090A0C] border border-[#232730] rounded-lg overflow-hidden flex items-center justify-center">
+          <div className="absolute inset-x-0 h-0.5 bg-amber-500/80 scan-laser shadow-sm shadow-amber-500" />
+          <div className="text-center font-mono text-[10px] text-zinc-500 space-y-0.5 pointer-events-none">
+            <span className="text-amber-400/80 font-bold block">LASER OPTIC ENGAGED</span>
+            <span>READY FOR KEYBOARD-WEDGE OR MANUAL INPUT</span>
+          </div>
+          {/* Corner Viewfinder Marks */}
+          <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-amber-500/70" />
+          <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-amber-500/70" />
+          <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-amber-500/70" />
+          <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-amber-500/70" />
+        </div>
+
         {/* Scan Input Form */}
-        <form onSubmit={handleScanSubmit} className="space-y-3">
-          <label className="block text-xs font-semibold text-slate-300">
-            Scan Barcode or Type SKU
+        <form onSubmit={handleScanSubmit} className="space-y-2.5">
+          <label className="block text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
+            BARCODE_PAYLOAD // SKU_NUMBER
           </label>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <span className="absolute left-3.5 top-2.5 text-slate-500 text-base">🔍</span>
               <input
                 ref={inputRef}
                 type="text"
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value.toUpperCase())}
                 placeholder="e.g. SKU-PROD-001"
-                className="w-full pl-10 pr-4 py-2.5 font-mono font-semibold bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none uppercase text-white placeholder-slate-500 text-sm"
+                className="w-full px-3.5 py-2 font-mono font-bold bg-[#12141A] border border-[#262B35] rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 outline-none uppercase text-zinc-100 placeholder-zinc-600 text-sm"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={scanMutation.isPending}
-              className="px-5 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-mono font-bold rounded-lg transition-all shadow-xs disabled:opacity-50 text-xs btn-tactile"
             >
-              {scanMutation.isPending ? 'Searching...' : 'Scan'}
+              {scanMutation.isPending ? 'QUERYING...' : 'RESOLVE'}
             </button>
           </div>
-          <p className="text-xs text-slate-500">
-            Handheld optical scanners configured in keyboard wedge mode will trigger scan automatically on Enter.
-          </p>
         </form>
 
         {/* Scanned Product Card */}
         {scannedProduct && (
-          <div className="bg-slate-950/70 border border-cyan-500/30 rounded-xl p-4 space-y-3 animate-in fade-in duration-200">
+          <div className="bg-[#12141A] border border-[#262B35] rounded-lg p-4 space-y-3 animate-in fade-in duration-150">
             <div className="flex items-start justify-between">
               <div>
-                <span className="font-mono text-xs font-bold bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/30">
+                <span className="font-mono text-xs font-bold bg-[#1C2028] text-amber-400 px-2 py-0.5 rounded border border-amber-500/30">
                   {scannedProduct.sku}
                 </span>
-                <h4 className="font-bold text-white text-base mt-1.5">{scannedProduct.name}</h4>
+                <h4 className="font-bold text-zinc-100 text-sm mt-1.5">{scannedProduct.name}</h4>
                 {scannedProduct.description && (
-                  <p className="text-xs text-slate-400 mt-0.5">{scannedProduct.description}</p>
+                  <p className="text-xs text-zinc-400 mt-0.5">{scannedProduct.description}</p>
                 )}
               </div>
               <span
-                className={`px-2.5 py-0.5 text-xs font-semibold rounded-full uppercase border ${
-                  scannedProduct.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-800 text-slate-400 border-slate-700'
+                className={`px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded border ${
+                  scannedProduct.isActive
+                    ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/30'
+                    : 'bg-zinc-800 text-zinc-400 border-zinc-700'
                 }`}
               >
-                {scannedProduct.isActive ? 'Active' : 'Inactive'}
+                {scannedProduct.isActive ? 'ACTIVE' : 'ARCHIVED'}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/80 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2.5 border-t border-[#1F232B] text-xs font-mono">
               <div>
-                <span className="text-slate-400 block text-[11px]">Cost Price</span>
-                <span className="font-bold font-mono text-slate-200">${scannedProduct.costPrice.toFixed(2)}</span>
+                <span className="text-zinc-500 block text-[10px] uppercase">Cost</span>
+                <span className="font-bold text-zinc-200">${scannedProduct.costPrice.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Sell Price</span>
-                <span className="font-bold font-mono text-slate-200">${scannedProduct.sellPrice.toFixed(2)}</span>
+                <span className="text-zinc-500 block text-[10px] uppercase">Sell</span>
+                <span className="font-bold text-zinc-200">${scannedProduct.sellPrice.toFixed(2)}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Reorder Point</span>
-                <span className="font-bold font-mono text-slate-200">{scannedProduct.reorderPoint} {scannedProduct.unit}</span>
+                <span className="text-zinc-500 block text-[10px] uppercase">Reorder Pt</span>
+                <span className="font-bold text-zinc-200">{scannedProduct.reorderPoint} {scannedProduct.unit}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[11px]">Reorder Qty</span>
-                <span className="font-bold font-mono text-slate-200">{scannedProduct.reorderQty} {scannedProduct.unit}</span>
+                <span className="text-zinc-500 block text-[10px] uppercase">Reorder Qty</span>
+                <span className="font-bold text-zinc-200">{scannedProduct.reorderQty} {scannedProduct.unit}</span>
               </div>
             </div>
 
             {/* Warehouse Stock Levels */}
-            <div className="pt-2 border-t border-slate-800/80">
-              <span className="text-xs font-semibold text-slate-300 mb-2 block">Warehouse Availability:</span>
+            <div className="pt-2.5 border-t border-[#1F232B]">
+              <span className="text-[11px] font-mono font-bold uppercase text-zinc-400 mb-2 block">
+                Facility Stock Telemetry:
+              </span>
               <div className="space-y-1.5">
                 {warehouses?.map((wh) => (
                   <WarehouseStockRow
@@ -148,13 +174,13 @@ export default function BarcodeScannerModal({ onClose }: BarcodeScannerModalProp
           </div>
         )}
 
-        <div className="flex justify-end pt-2">
+        <div className="flex justify-end pt-1">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
+            className="px-4 py-1.5 border border-[#262B35] text-zinc-400 hover:text-zinc-100 hover:bg-[#161922] font-mono font-medium rounded-lg transition-colors text-xs"
           >
-            Done
+            DISMISS
           </button>
         </div>
       </div>
@@ -180,10 +206,10 @@ function WarehouseStockRow({
   });
 
   return (
-    <div className="flex items-center justify-between text-xs bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800">
-      <span className="text-slate-300 font-medium">{warehouseName}</span>
-      <span className="font-bold font-mono text-cyan-400">
-        {data !== undefined ? `${data.balance} on hand` : 'Checking...'}
+    <div className="flex items-center justify-between text-xs bg-[#090A0C] px-3 py-1.5 rounded border border-[#1F232B]">
+      <span className="text-zinc-300 font-medium">{warehouseName}</span>
+      <span className="font-bold font-mono text-amber-400">
+        {data !== undefined ? `${data.balance} units` : '...'}
       </span>
     </div>
   );

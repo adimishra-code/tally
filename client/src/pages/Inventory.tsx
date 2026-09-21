@@ -61,7 +61,7 @@ export default function Inventory() {
     enabled: !!warehouseId,
   });
 
-  // Fetch bins for adjustment modal if a warehouse is chosen in modal
+  // Fetch bins for adjustment modal
   const targetAdjustmentWh = adjustForm.warehouseId || warehouseId;
   const { data: adjustmentBins } = useQuery<Bin[]>({
     queryKey: ['bins', targetAdjustmentWh],
@@ -148,11 +148,11 @@ export default function Inventory() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `inventory_${whName}_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `tally_inventory_${whName}_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     link.remove();
-    toast.success('Inventory report exported');
+    toast.success('Inventory ledger report downloaded');
   };
 
   const handleQuickAdjust = (item: any) => {
@@ -162,7 +162,7 @@ export default function Inventory() {
       binId: '',
       type: 'increase',
       quantity: 1,
-      reason: 'Cycle count check',
+      reason: 'Physical count audit verification',
     });
     setShowAdjustModal(true);
   };
@@ -173,7 +173,7 @@ export default function Inventory() {
       fromWarehouseId: warehouseId,
       toWarehouseId: '',
       quantity: 1,
-      reason: 'Rebalance transfer',
+      reason: 'Rebalance fulfillment inventory',
     });
     setShowTransferModal(true);
   };
@@ -190,7 +190,7 @@ export default function Inventory() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       queryClient.invalidateQueries({ queryKey: ['stock-history'] });
-      toast.success('Stock adjustment recorded');
+      toast.success('Stock ledger entry recorded');
       setShowAdjustModal(false);
       setAdjustForm({
         productId: '',
@@ -216,7 +216,7 @@ export default function Inventory() {
     }) => api.post('/stock/transfer', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      toast.success('Stock transferred successfully');
+      toast.success('Transfer ledger entries recorded');
       setShowTransferModal(false);
       setTransferForm({
         productId: '',
@@ -256,19 +256,27 @@ export default function Inventory() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Ledger Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#232730] pb-5">
         <div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Inventory Ledger</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Derived real-time stock balances across all locations</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 led-pulse-amber" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight">
+              Stock Ledger & Inventory
+            </h1>
+          </div>
+          <p className="text-zinc-400 text-xs sm:text-sm mt-1 font-mono">
+            Append-only transactional balance • Multi-zone bin verification
+          </p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           {warehouseId && inventory && inventory.length > 0 && (
             <button
               onClick={handleExportCsv}
-              className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-[#12141A] border border-[#262B35] hover:border-amber-500/50 hover:bg-[#181C24] text-zinc-200 font-mono font-semibold rounded-lg transition-all shadow-xs text-xs flex items-center gap-1.5 btn-tactile"
             >
-              <IconExport className="w-4 h-4 text-slate-400" />
-              <span>Export CSV</span>
+              <IconExport className="w-4 h-4 text-amber-400" />
+              <span>EXPORT_CSV</span>
             </button>
           )}
           <button
@@ -276,28 +284,30 @@ export default function Inventory() {
               setTransferForm((prev) => ({ ...prev, fromWarehouseId: warehouseId }));
               setShowTransferModal(true);
             }}
-            className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-[#12141A] border border-[#262B35] hover:border-zinc-500 hover:bg-[#181C24] text-zinc-200 font-mono font-semibold rounded-lg transition-all shadow-xs text-xs flex items-center gap-1.5 btn-tactile"
           >
             <span>↔</span>
-            <span>Transfer Stock</span>
+            <span>TRANSFER_STOCK</span>
           </button>
           <button
             onClick={() => {
               setAdjustForm((prev) => ({ ...prev, warehouseId: warehouseId }));
               setShowAdjustModal(true);
             }}
-            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-500/25 text-sm flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold rounded-lg transition-all shadow-xs text-xs flex items-center gap-1.5 btn-tactile"
           >
             <span>+</span>
-            <span>Adjust Stock</span>
+            <span>ADJUST_STOCK</span>
           </button>
         </div>
       </div>
 
       {/* Warehouse Selector Card */}
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md shadow-black/20">
+      <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div className="flex-1 max-w-md">
-          <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Warehouse Location</label>
+          <label className="block text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+            LOCATION // TARGET_WAREHOUSE
+          </label>
           <select
             value={warehouseId}
             onChange={(e) => {
@@ -305,9 +315,9 @@ export default function Inventory() {
               setSearch('');
               setStockFilter('ALL');
             }}
-            className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium"
+            className="w-full px-3.5 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 outline-none text-xs font-mono font-medium"
           >
-            <option value="">Choose a warehouse to view stock...</option>
+            <option value="">SELECT FACILITY TO INSPECT...</option>
             {warehouses?.map((wh) => (
               <option key={wh._id} value={wh._id}>
                 {wh.name}
@@ -316,157 +326,158 @@ export default function Inventory() {
           </select>
         </div>
         {warehouseId && (
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold self-start md:self-auto">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-            <span>Real-time balance ledger synced</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#14171F] border border-[#272C38] text-xs font-mono self-start md:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 led-pulse-emerald inline-block animate-pulse"></span>
+            <span className="text-emerald-400 font-semibold">LEDGER_ACTIVE // ZERO_MUTABLE_DRIFT</span>
           </div>
         )}
       </div>
 
-      {/* KPI Metrics Cards */}
+      {/* KPI Metrics Telemetry */}
       {warehouseId && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total SKUs</div>
-            <div className="text-2xl sm:text-3xl font-black text-white">{totalSkus}</div>
-            <div className="text-xs text-slate-400 mt-1">Catalog items tracked</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+              Active SKUs
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-mono">{totalSkus}</div>
+            <div className="text-[11px] text-zinc-500 mt-1 font-mono">TRACKED_IN_CATALOG</div>
           </div>
-          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Units</div>
-            <div className="text-2xl sm:text-3xl font-black text-blue-400">{totalUnits.toLocaleString()}</div>
-            <div className="text-xs text-slate-400 mt-1">Available balance on-hand</div>
+          <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+              On-Hand Units
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono">
+              {totalUnits.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-zinc-500 mt-1 font-mono">PHYSICAL_ON_SHELF</div>
           </div>
-          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Valuation</div>
-            <div className="text-2xl sm:text-3xl font-black text-emerald-400">
+          <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+              Stock Valuation
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">
               ${totalValuation.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className="text-xs text-slate-400 mt-1">Total stock value at cost</div>
+            <div className="text-[11px] text-zinc-500 mt-1 font-mono">AT_COST_PRICE</div>
           </div>
-          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Low Stock</div>
-            <div className="text-2xl sm:text-3xl font-black text-amber-400">{lowStockCount}</div>
-            <div className="text-xs text-slate-400 mt-1">At/below reorder point</div>
+          <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+              Reorder Risk
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-amber-500 font-mono">{lowStockCount}</div>
+            <div className="text-[11px] text-zinc-500 mt-1 font-mono">AT_OR_BELOW_REORDER</div>
           </div>
-          <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Out of Stock</div>
-            <div className="text-2xl sm:text-3xl font-black text-rose-400">{outOfStockCount}</div>
-            <div className="text-xs text-slate-400 mt-1">Immediate reorder required</div>
+          <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm col-span-2 sm:col-span-1">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+              Depleted Stock
+            </div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-rose-400 font-mono">{outOfStockCount}</div>
+            <div className="text-[11px] text-zinc-500 mt-1 font-mono">ZERO_BALANCE</div>
           </div>
         </div>
       )}
 
       {/* Filter and Search Bar */}
       {warehouseId && (
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-4 flex flex-col md:flex-row items-center gap-3 shadow-md shadow-black/20">
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-3.5 flex flex-col md:flex-row items-center gap-3 shadow-sm">
           <div className="relative flex-1 w-full">
-            <span className="absolute left-3.5 top-3 text-slate-500">🔍</span>
             <input
               type="text"
-              placeholder="Search by SKU or product name..."
+              placeholder="Filter by SKU or product description..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+              className="w-full px-3.5 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 placeholder-zinc-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500/40 outline-none text-xs font-mono"
             />
           </div>
           <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-            <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+            <div className="flex items-center bg-[#12141A] p-1 rounded-lg border border-[#262B35] text-xs font-mono font-semibold">
               <button
                 onClick={() => setStockFilter('ALL')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  stockFilter === 'ALL' ? 'bg-slate-800 text-white shadow-xs font-semibold' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  stockFilter === 'ALL'
+                    ? 'bg-amber-500 text-zinc-950 font-bold'
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                All ({totalSkus})
+                ALL ({totalSkus})
               </button>
               <button
                 onClick={() => setStockFilter('IN_STOCK')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  stockFilter === 'IN_STOCK' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  stockFilter === 'IN_STOCK'
+                    ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 font-bold'
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                In Stock ({inventory ? inventory.filter((i: any) => i.balance > (i.reorderPoint ?? 10)).length : 0})
+                OPTIMAL ({inventory ? inventory.filter((i: any) => i.balance > (i.reorderPoint ?? 10)).length : 0})
               </button>
               <button
                 onClick={() => setStockFilter('LOW')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  stockFilter === 'LOW' ? 'bg-amber-500/20 text-amber-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  stockFilter === 'LOW'
+                    ? 'bg-amber-950/60 text-amber-300 border border-amber-500/40 font-bold'
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                Low ({lowStockCount})
+                LOW ({lowStockCount})
               </button>
               <button
                 onClick={() => setStockFilter('OUT')}
-                className={`px-3 py-1.5 rounded-lg transition-colors ${
-                  stockFilter === 'OUT' ? 'bg-rose-500/20 text-rose-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  stockFilter === 'OUT'
+                    ? 'bg-rose-950/60 text-rose-300 border border-rose-500/40 font-bold'
+                    : 'text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                Out ({outOfStockCount})
+                DEPLETED ({outOfStockCount})
               </button>
             </div>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-300 outline-none focus:border-blue-500"
+              className="px-3 py-1.5 bg-[#12141A] border border-[#262B35] rounded-lg text-xs font-mono text-zinc-300 outline-none focus:border-amber-500"
             >
-              <option value="balance_desc">Stock: High to Low</option>
-              <option value="balance_asc">Stock: Low to High</option>
-              <option value="sku">SKU (A-Z)</option>
-              <option value="name">Product Name (A-Z)</option>
+              <option value="balance_desc">SORT: STOCK DESC</option>
+              <option value="balance_asc">SORT: STOCK ASC</option>
+              <option value="sku">SORT: SKU [A-Z]</option>
+              <option value="name">SORT: NAME [A-Z]</option>
             </select>
           </div>
         </div>
       )}
 
-      {/* Inventory Table */}
+      {/* Inventory Ledger Table */}
       {warehouseId ? (
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 overflow-hidden shadow-md shadow-black/20">
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-950/80 border-b border-slate-800/80">
+            <table className="w-full text-left font-sans">
+              <thead className="bg-[#12141A] border-b border-[#232730] text-[10px] font-mono uppercase tracking-wider text-zinc-400">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    SKU
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Product Name
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Unit
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Reorder Point
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Available Balance
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Valuation
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Last Mutation
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                    Quick Actions
-                  </th>
+                  <th className="px-4 py-3">SKU_IDENTIFIER</th>
+                  <th className="px-4 py-3">CATALOG_NAME</th>
+                  <th className="px-4 py-3">UNIT</th>
+                  <th className="px-4 py-3 text-right">REORDER_PT</th>
+                  <th className="px-4 py-3 text-right">AVAILABLE_ON_HAND</th>
+                  <th className="px-4 py-3 text-right">VALUATION</th>
+                  <th className="px-4 py-3">HEALTH_STATUS</th>
+                  <th className="px-4 py-3">LAST_MUTATION</th>
+                  <th className="px-4 py-3 text-center">OPERATIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-[#1C2028] text-xs">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-slate-500">
-                      Loading inventory ledger...
+                    <td colSpan={9} className="px-6 py-12 text-center text-zinc-500 font-mono">
+                      SYNCHRONIZING LEDGER STATE...
                     </td>
                   </tr>
                 ) : filteredInventory.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-slate-500">
+                    <td colSpan={9} className="px-6 py-12 text-center text-zinc-500 font-mono">
                       {search || stockFilter !== 'ALL'
-                        ? 'No inventory items match the current filters.'
-                        : 'No stock records found for this warehouse yet.'}
+                        ? 'NO CATALOG ITEMS MATCH FILTER CRITERIA'
+                        : 'NO LEDGER MUTATIONS RECORDED AT THIS FACILITY'}
                     </td>
                   </tr>
                 ) : (
@@ -476,64 +487,62 @@ export default function Inventory() {
                     const isEmpty = item.balance === 0;
                     const val = item.valuation ?? ((item.balance || 0) * (item.costPrice || 0));
                     return (
-                      <tr key={item.productId} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="px-6 py-4">
-                          <code className="text-xs font-mono text-blue-400 font-bold bg-blue-500/10 px-2.5 py-1 rounded-lg border border-blue-500/20">
+                      <tr key={item.productId} className="hover:bg-[#13161C] transition-colors industrial-row">
+                        <td className="px-4 py-3">
+                          <code className="text-xs font-mono text-amber-400 font-bold bg-[#171A21] px-2 py-0.5 rounded border border-[#2B313E]">
                             {item.sku}
                           </code>
                         </td>
-                        <td className="px-6 py-4 text-sm font-semibold text-white">{item.name}</td>
-                        <td className="px-6 py-4 text-xs text-slate-400">{item.unit}</td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-xs font-mono font-medium text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                            {rp}
-                          </span>
+                        <td className="px-4 py-3 font-semibold text-zinc-100">{item.name}</td>
+                        <td className="px-4 py-3 text-zinc-500 font-mono">{item.unit}</td>
+                        <td className="px-4 py-3 text-right font-mono text-zinc-400">
+                          {rp}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-4 py-3 text-right font-mono">
                           <span
-                            className={`text-lg font-extrabold ${
+                            className={`text-base font-extrabold ${
                               isEmpty ? 'text-rose-400' : isLow ? 'text-amber-400' : 'text-emerald-400'
                             }`}
                           >
                             {item.balance}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right text-sm font-semibold text-slate-200 font-mono">
+                        <td className="px-4 py-3 text-right font-mono text-zinc-300">
                           ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           {isEmpty ? (
-                            <span className="px-2.5 py-1 text-xs font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 rounded-lg uppercase">
-                              Out of Stock
+                            <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-rose-950/40 text-rose-300 border border-rose-800/60 rounded uppercase">
+                              DEPLETED
                             </span>
                           ) : isLow ? (
-                            <span className="px-2.5 py-1 text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-lg uppercase">
-                              Low (≤ {rp})
+                            <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-amber-950/40 text-amber-300 border border-amber-800/60 rounded uppercase">
+                              REORDER_RISK
                             </span>
                           ) : (
-                            <span className="px-2.5 py-1 text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 rounded-lg uppercase">
-                              In Stock
+                            <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-emerald-950/40 text-emerald-300 border border-emerald-800/60 rounded uppercase">
+                              OPTIMAL
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-400">
-                          {new Date(item.lastUpdated).toLocaleString()}
+                        <td className="px-4 py-3 text-zinc-500 font-mono text-[11px]">
+                          {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : 'N/A'}
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1 font-mono text-[10px]">
                             <button
                               onClick={() => handleQuickAdjust(item)}
-                              title="Adjust stock quantity"
-                              className="px-2.5 py-1 text-xs bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 font-semibold rounded-lg transition-colors"
+                              title="Record stock ledger adjustment"
+                              className="px-2 py-1 bg-[#161921] hover:bg-[#1E232E] hover:border-amber-500/40 text-amber-400 border border-[#272D3A] rounded transition-colors"
                             >
-                              Adjust
+                              ADJUST
                             </button>
                             <button
                               onClick={() => handleQuickTransfer(item)}
-                              title="Transfer to another warehouse"
-                              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold rounded-lg transition-colors"
+                              title="Transfer to another facility"
+                              className="px-2 py-1 bg-[#161921] hover:bg-[#1E232E] text-zinc-300 border border-[#272D3A] rounded transition-colors"
                             >
-                              Move
+                              MOVE
                             </button>
                             <button
                               onClick={() =>
@@ -543,10 +552,10 @@ export default function Inventory() {
                                   sku: item.sku,
                                 })
                               }
-                              title="Audit ledger transactions"
-                              className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold rounded-lg transition-colors"
+                              title="Inspect immutable ledger audit stream"
+                              className="px-2 py-1 bg-[#161921] hover:bg-[#1E232E] text-zinc-400 hover:text-zinc-200 border border-[#272D3A] rounded transition-colors"
                             >
-                              Audit
+                              AUDIT
                             </button>
                           </div>
                         </td>
@@ -559,51 +568,57 @@ export default function Inventory() {
           </div>
         </div>
       ) : (
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-dashed border-slate-800 p-12 text-center text-slate-400">
-          Please select a warehouse from the dropdown above to view stock ledger balances.
+        <div className="bg-[#0E1014] rounded-xl border border-dashed border-[#262B35] p-12 text-center text-zinc-500 font-mono text-xs">
+          [!] SELECT FACILITY FROM SELECTOR DROPDOWN TO STREAM REAL-TIME LEDGER
         </div>
       )}
 
       {/* Adjust Stock Modal */}
       {showAdjustModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-white">Manual Stock Adjustment</h3>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 text-zinc-100">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+              <h3 className="text-sm font-bold text-zinc-100 font-mono uppercase">
+                Stock Ledger Adjustment
+              </h3>
               <button
                 onClick={() => setShowAdjustModal(false)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                className="text-zinc-400 hover:text-zinc-100 font-mono text-xs"
               >
-                ✕
+                [ESC]
               </button>
             </div>
-            <form onSubmit={handleAdjustSubmit} className="space-y-4">
+            <form onSubmit={handleAdjustSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Product*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  CATALOG_PRODUCT*
+                </label>
                 <select
                   value={adjustForm.productId}
                   onChange={(e) => setAdjustForm({ ...adjustForm, productId: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 >
-                  <option value="">Select product...</option>
+                  <option value="">Choose item...</option>
                   {products?.map((p) => (
                     <option key={p._id} value={p._id}>
-                      {p.sku} - {p.name}
+                      {p.sku} — {p.name}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Warehouse*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  FACILITY_LOCATION*
+                </label>
                 <select
                   value={adjustForm.warehouseId || warehouseId}
                   onChange={(e) => setAdjustForm({ ...adjustForm, warehouseId: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 >
-                  <option value="">Select warehouse...</option>
+                  <option value="">Select facility...</option>
                   {warehouses?.map((wh) => (
                     <option key={wh._id} value={wh._id}>
                       {wh.name}
@@ -614,73 +629,81 @@ export default function Inventory() {
 
               {adjustmentBins && adjustmentBins.length > 0 && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Bin Location (Optional)</label>
+                  <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                    BIN_SLOT (OPTIONAL)
+                  </label>
                   <select
                     value={adjustForm.binId}
                     onChange={(e) => setAdjustForm({ ...adjustForm, binId: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-mono text-sm"
+                    className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none font-mono text-xs"
                   >
-                    <option value="">No specific bin</option>
+                    <option value="">No specific bin slot</option>
                     {adjustmentBins.map((bin) => (
                       <option key={bin._id} value={bin._id}>
-                        {bin.code} {bin.zone ? `(${bin.zone})` : ''}
+                        {bin.code} {bin.zone ? `[ZONE: ${bin.zone}]` : ''}
                       </option>
                     ))}
                   </select>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Action*</label>
+                  <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                    DIRECTION*
+                  </label>
                   <select
                     value={adjustForm.type}
                     onChange={(e) => setAdjustForm({ ...adjustForm, type: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-sm"
+                    className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none font-mono text-xs"
                   >
-                    <option value="increase">+ Increase Stock</option>
-                    <option value="decrease">- Decrease Stock</option>
+                    <option value="increase">[+] Increase Stock</option>
+                    <option value="decrease">[-] Decrease Stock</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Quantity*</label>
+                  <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                    DELTA_QUANTITY*
+                  </label>
                   <input
                     type="number"
                     min="1"
                     value={adjustForm.quantity}
                     onChange={(e) => setAdjustForm({ ...adjustForm, quantity: parseInt(e.target.value) || 1 })}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                    className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Reason / Notes*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  AUDIT_REASON // NOTES*
+                </label>
                 <input
                   type="text"
                   value={adjustForm.reason}
                   onChange={(e) => setAdjustForm({ ...adjustForm, reason: e.target.value })}
-                  placeholder="e.g. Cycle count discrepancy, Damaged box"
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  placeholder="e.g. Discrepancy during cycle count, Damaged packaging"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 placeholder-zinc-600 focus:border-amber-500 outline-none text-xs"
                   required
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAdjustModal(false)}
-                  className="flex-1 py-2.5 border border-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-800 transition-colors text-sm"
+                  className="flex-1 py-2 border border-[#262B35] text-zinc-400 hover:text-zinc-100 hover:bg-[#161922] font-mono font-medium rounded-lg transition-colors text-xs"
                 >
-                  Cancel
+                  CANCEL
                 </button>
                 <button
                   type="submit"
                   disabled={adjustMutation.isPending}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors disabled:opacity-50 text-sm shadow-md shadow-blue-500/25"
+                  className="flex-1 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold rounded-lg transition-colors disabled:opacity-50 text-xs font-mono btn-tactile"
                 >
-                  {adjustMutation.isPending ? 'Recording...' : 'Apply Adjustment'}
+                  {adjustMutation.isPending ? 'COMMITTING...' : 'COMMIT_ADJUSTMENT'}
                 </button>
               </div>
             </form>
@@ -690,44 +713,50 @@ export default function Inventory() {
 
       {/* Transfer Stock Modal */}
       {showTransferModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-lg font-bold text-white">Transfer Stock Between Warehouses</h3>
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4 text-zinc-100">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+              <h3 className="text-sm font-bold text-zinc-100 font-mono uppercase">
+                Inter-Facility Stock Transfer
+              </h3>
               <button
                 onClick={() => setShowTransferModal(false)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                className="text-zinc-400 hover:text-zinc-100 font-mono text-xs"
               >
-                ✕
+                [ESC]
               </button>
             </div>
-            <form onSubmit={handleTransferSubmit} className="space-y-4">
+            <form onSubmit={handleTransferSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Product*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  TRANSFER_SKU*
+                </label>
                 <select
                   value={transferForm.productId}
                   onChange={(e) => setTransferForm({ ...transferForm, productId: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 >
-                  <option value="">Select product to move...</option>
+                  <option value="">Select SKU...</option>
                   {products?.map((p) => (
                     <option key={p._id} value={p._id}>
-                      {p.sku} - {p.name}
+                      {p.sku} — {p.name}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">From Source Warehouse*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  ORIGIN_WAREHOUSE*
+                </label>
                 <select
                   value={transferForm.fromWarehouseId || warehouseId}
                   onChange={(e) => setTransferForm({ ...transferForm, fromWarehouseId: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 >
-                  <option value="">Select origin...</option>
+                  <option value="">Select origin facility...</option>
                   {warehouses?.map((wh) => (
                     <option key={wh._id} value={wh._id}>
                       {wh.name}
@@ -737,14 +766,16 @@ export default function Inventory() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">To Destination Warehouse*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  DESTINATION_WAREHOUSE*
+                </label>
                 <select
                   value={transferForm.toWarehouseId}
                   onChange={(e) => setTransferForm({ ...transferForm, toWarehouseId: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 >
-                  <option value="">Select destination...</option>
+                  <option value="">Select destination facility...</option>
                   {warehouses
                     ?.filter((wh) => wh._id !== (transferForm.fromWarehouseId || warehouseId))
                     .map((wh) => (
@@ -756,42 +787,46 @@ export default function Inventory() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Transfer Quantity*</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  TRANSFER_QUANTITY*
+                </label>
                 <input
                   type="number"
                   min="1"
                   value={transferForm.quantity}
                   onChange={(e) => setTransferForm({ ...transferForm, quantity: parseInt(e.target.value) || 1 })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Transfer Notes (Optional)</label>
+                <label className="block text-[11px] font-mono font-bold text-zinc-400 mb-1">
+                  LOGISTICS_NOTES (OPTIONAL)
+                </label>
                 <input
                   type="text"
                   value={transferForm.reason}
                   onChange={(e) => setTransferForm({ ...transferForm, reason: e.target.value })}
-                  placeholder="e.g. Rebalance inventory for regional demand"
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  placeholder="e.g. Rebalance inventory for regional fulfillment demand"
+                  className="w-full px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 placeholder-zinc-600 focus:border-amber-500 outline-none text-xs"
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowTransferModal(false)}
-                  className="flex-1 py-2.5 border border-slate-800 text-slate-300 font-medium rounded-xl hover:bg-slate-800 transition-colors text-sm"
+                  className="flex-1 py-2 border border-[#262B35] text-zinc-400 hover:text-zinc-100 hover:bg-[#161922] font-mono font-medium rounded-lg transition-colors text-xs"
                 >
-                  Cancel
+                  CANCEL
                 </button>
                 <button
                   type="submit"
                   disabled={transferMutation.isPending}
-                  className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors disabled:opacity-50 text-sm shadow-md shadow-blue-500/25"
+                  className="flex-1 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold rounded-lg transition-colors disabled:opacity-50 text-xs font-mono btn-tactile"
                 >
-                  {transferMutation.isPending ? 'Transferring...' : 'Execute Transfer'}
+                  {transferMutation.isPending ? 'TRANSFERRING...' : 'DISPATCH_TRANSFER'}
                 </button>
               </div>
             </form>
@@ -801,70 +836,78 @@ export default function Inventory() {
 
       {/* Stock History Audit Drawer */}
       {historyProduct && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col text-zinc-100">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
               <div>
-                <h3 className="text-lg font-bold text-white">Stock Ledger History</h3>
-                <p className="text-xs text-slate-400">
-                  {historyProduct.name} (<span className="font-mono text-blue-400">{historyProduct.sku}</span>)
+                <h3 className="text-sm font-bold text-zinc-100 font-mono uppercase">
+                  Stock Ledger Audit Trail
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {historyProduct.name} (<span className="font-mono text-amber-400">{historyProduct.sku}</span>)
                 </p>
               </div>
               <button
                 onClick={() => setHistoryProduct(null)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                className="text-zinc-400 hover:text-zinc-100 font-mono text-xs"
               >
-                ✕
+                [ESC]
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1 divide-y divide-slate-800/80">
+            <div className="overflow-y-auto flex-1 divide-y divide-[#1C2028]">
               {isLoadingHistory ? (
-                <div className="py-12 text-center text-slate-500 text-sm">Loading ledger audit entries...</div>
+                <div className="py-12 text-center text-zinc-500 text-xs font-mono">
+                  QUERYING IMMUTABLE AUDIT RECORDS...
+                </div>
               ) : !stockHistory || stockHistory.length === 0 ? (
-                <div className="py-12 text-center text-slate-500 text-sm">No ledger entries found.</div>
+                <div className="py-12 text-center text-zinc-500 text-xs font-mono">
+                  NO AUDIT MUTATIONS FOUND FOR THIS SKU AT THIS FACILITY
+                </div>
               ) : (
                 stockHistory.map((entry: any) => (
-                  <div key={entry._id} className="py-3 flex items-center justify-between text-sm">
+                  <div key={entry._id} className="py-3 flex items-center justify-between text-xs">
                     <div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`font-semibold px-2 py-0.5 rounded text-xs uppercase border ${
+                          className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] uppercase border ${
                             entry.quantityChange > 0
-                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                              : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                              ? 'bg-emerald-950/40 text-emerald-400 border-emerald-500/40'
+                              : 'bg-rose-950/40 text-rose-400 border-rose-500/40'
                           }`}
                         >
                           {entry.type.replace(/_/g, ' ')}
                         </span>
-                        <span className="text-xs text-slate-400 font-mono">Ref: {entry.referenceType}</span>
+                        <span className="text-[11px] text-zinc-500 font-mono">
+                          REF: {entry.referenceType}
+                        </span>
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">
-                        By: {entry.createdBy?.name || 'Staff'} • {new Date(entry.createdAt).toLocaleString()}
-                        {entry.batchNumber && ` • Batch: ${entry.batchNumber}`}
+                      <div className="text-[11px] text-zinc-500 font-mono mt-1">
+                        By {entry.createdBy?.name || 'Staff User'} • {new Date(entry.createdAt).toLocaleString()}
+                        {entry.batchNumber && ` • Batch #${entry.batchNumber}`}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right font-mono">
                       <div
-                        className={`font-bold font-mono ${
+                        className={`text-sm font-bold ${
                           entry.quantityChange > 0 ? 'text-emerald-400' : 'text-rose-400'
                         }`}
                       >
                         {entry.quantityChange > 0 ? `+${entry.quantityChange}` : entry.quantityChange}
                       </div>
-                      <div className="text-xs text-slate-400 font-mono">Balance: {entry.balanceAfter}</div>
+                      <div className="text-[10px] text-zinc-500">Balance: {entry.balanceAfter}</div>
                     </div>
                   </div>
                 ))
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-800 text-right">
+            <div className="pt-2 border-t border-[#232730] text-right">
               <button
                 onClick={() => setHistoryProduct(null)}
-                className="px-4 py-2 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors text-sm"
+                className="px-4 py-1.5 bg-[#12141A] text-zinc-300 border border-[#262B35] font-mono font-medium rounded-lg hover:bg-[#181C25] transition-colors text-xs"
               >
-                Close
+                DISMISS
               </button>
             </div>
           </div>

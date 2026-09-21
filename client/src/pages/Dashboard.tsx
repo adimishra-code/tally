@@ -30,127 +30,140 @@ export default function Dashboard() {
 
   const kpis = [
     {
-      label: 'Catalog Products',
+      label: 'Catalog SKUs',
       value: summary?.totalProducts ?? 0,
-      subtext: `${summary?.totalWarehouses ?? 0} active locations`,
-      icon: <IconPackage className="w-5 h-5 text-blue-600" />,
-      color: 'from-blue-500 to-blue-600',
+      subtext: `${summary?.totalWarehouses ?? 0} active facilities`,
+      icon: <IconPackage className="w-5 h-5 text-amber-400" />,
       link: '/products',
+      tag: 'ACTIVE_CATALOG',
     },
     {
-      label: 'Inventory Value',
+      label: 'Stock Valuation',
       value: summary?.totalValuation != null ? `$${Math.round(summary.totalValuation).toLocaleString()}` : '$0',
       subtext: `${summary?.lowStockCount ?? 0} items at reorder point`,
-      icon: <IconValuation className="w-5 h-5 text-amber-600" />,
-      color: 'from-amber-500 to-amber-600',
+      icon: <IconValuation className="w-5 h-5 text-amber-500" />,
       link: '/inventory',
+      tag: 'LEDGER_SUM',
     },
     {
       label: 'Inbound POs',
       value: summary?.openPOs ?? 0,
-      subtext: `${summary?.pendingApprovals ?? 0} pending approval`,
-      icon: <IconInbox className="w-5 h-5 text-emerald-600" />,
-      color: 'from-emerald-500 to-emerald-600',
+      subtext: `${summary?.pendingApprovals ?? 0} pending authorization`,
+      icon: <IconInbox className="w-5 h-5 text-emerald-400" />,
       link: '/purchase-orders',
+      tag: 'PROCUREMENT',
     },
     {
       label: 'Outbound SOs',
       value: summary?.openSOs ?? 0,
       subtext: `${summary?.readyToPick ?? 0} to pick • ${summary?.readyToShip ?? 0} to ship`,
-      icon: <IconTruck className="w-5 h-5 text-purple-600" />,
-      color: 'from-purple-500 to-purple-600',
+      icon: <IconTruck className="w-5 h-5 text-amber-300" />,
       link: '/sales-orders',
+      tag: 'DISPATCH',
     },
     {
       label: 'Active Alerts',
       value: summary?.activeAlertsCount ?? 0,
-      subtext: 'Stock & SLA notices',
-      icon: <IconBell className="w-5 h-5 text-rose-600" />,
-      color: 'from-rose-500 to-rose-600',
+      subtext: 'Operational notices',
+      icon: <IconBell className="w-5 h-5 text-rose-400" />,
       link: '/alerts',
+      tag: 'TELEMETRY',
     },
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
-      {/* Header with quick scanner button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-7xl mx-auto space-y-6">
+      {/* Top Operations Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#232730] pb-5">
         <div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Operations Dashboard</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Real-time telemetry, warehouse inventory, and fulfillment pipeline</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 led-pulse-amber" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight font-sans">
+              Operations Command
+            </h1>
+          </div>
+          <p className="text-zinc-400 text-xs sm:text-sm mt-1 font-mono">
+            Derived stock ledger • Multi-zone fulfillment • Live WebSocket telemetry
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={() => setShowScanner(true)}
-            className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-2"
+            className="px-3.5 py-2 bg-[#12141A] border border-[#262B35] hover:border-amber-500/50 hover:bg-[#181C24] text-zinc-200 font-mono font-semibold rounded-lg transition-all shadow-xs text-xs flex items-center gap-2 btn-tactile"
           >
-            <IconScan className="w-4 h-4 text-slate-400" />
-            <span>Scan Barcode</span>
+            <IconScan className="w-4 h-4 text-amber-400" />
+            <span>SCAN_BARCODE</span>
           </button>
           <Link
             to="/inventory"
-            className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-500/25 text-sm flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold rounded-lg transition-all shadow-xs text-xs flex items-center gap-1.5 btn-tactile"
           >
             <IconPackage className="w-4 h-4" />
-            <span>Stock Ledger</span>
+            <span>STOCK_LEDGER &rarr;</span>
           </Link>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
+      {/* KPI Cards Grid - High Density Industrial Telemetry */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {kpis.map((kpi) => (
           <Link
             key={kpi.label}
             to={kpi.link}
-            className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-slate-800/80 shadow-md shadow-black/20 hover:border-slate-700 hover:bg-slate-900/90 transition-all hover:-translate-y-0.5 relative overflow-hidden group"
+            className="bg-[#0E1014] hover:bg-[#13161C] rounded-xl p-4 border border-[#232730] hover:border-[#353D4D] transition-all shadow-sm relative overflow-hidden group flex flex-col justify-between"
           >
             <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{kpi.label}</p>
-                <p className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1.5">
-                  {isLoading ? '...' : kpi.value}
-                </p>
-                <p className="text-xs text-slate-400 mt-1 font-medium">{kpi.subtext}</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+              <span className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+                {kpi.label}
+              </span>
+              <div className="w-7 h-7 rounded-md bg-[#161920] border border-[#262B35] flex items-center justify-center">
                 {kpi.icon}
               </div>
+            </div>
+            <div className="mt-3">
+              <p className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight font-mono">
+                {isLoading ? '...' : kpi.value}
+              </p>
+              <p className="text-[11px] text-zinc-400 mt-1 truncate">{kpi.subtext}</p>
+            </div>
+            <div className="mt-3 pt-2 border-t border-[#1C2028] flex items-center justify-between text-[9px] font-mono text-zinc-500">
+              <span>TAG // {kpi.tag}</span>
+              <span className="text-amber-400/80 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
             </div>
           </Link>
         ))}
       </div>
 
       {/* Pipeline Visualizers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Outbound Fulfillment Velocity */}
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 shadow-md shadow-black/20 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-[#232730] pb-3">
             <div className="flex items-center gap-2">
-              <IconTruck className="w-5 h-5 text-purple-400" />
-              <h3 className="font-bold text-white text-base">Outbound Fulfillment Funnel</h3>
+              <IconTruck className="w-4 h-4 text-amber-400" />
+              <h2 className="font-bold text-zinc-100 text-sm tracking-tight">Outbound Fulfillment Funnel</h2>
             </div>
-            <Link to="/sales-orders" className="text-xs text-blue-400 hover:text-blue-300 font-semibold">
-              View All SOs →
+            <Link to="/sales-orders" className="text-xs font-mono text-amber-400 hover:text-amber-300 font-semibold">
+              VIEW_ALL_SOS &rarr;
             </Link>
           </div>
 
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center font-mono">
             {[
-              { label: 'Draft', key: 'DRAFT', bg: 'bg-slate-800 text-slate-300 border-slate-700' },
-              { label: 'Confirmed', key: 'CONFIRMED', bg: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-              { label: 'Picking', key: 'PICKING', bg: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-              { label: 'Packed', key: 'PACKED', bg: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-              { label: 'Shipped', key: 'SHIPPED', bg: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' },
-              { label: 'Delivered', key: 'DELIVERED', bg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+              { label: 'Draft', key: 'DRAFT', border: 'border-zinc-700 text-zinc-400 bg-zinc-900/60' },
+              { label: 'Confirmed', key: 'CONFIRMED', border: 'border-amber-500/40 text-amber-300 bg-amber-500/10' },
+              { label: 'Picking', key: 'PICKING', border: 'border-amber-600/40 text-amber-400 bg-amber-600/15' },
+              { label: 'Packed', key: 'PACKED', border: 'border-zinc-500 text-zinc-200 bg-zinc-800/60' },
+              { label: 'Shipped', key: 'SHIPPED', border: 'border-emerald-500/40 text-emerald-300 bg-emerald-500/10' },
+              { label: 'Delivered', key: 'DELIVERED', border: 'border-emerald-600/50 text-emerald-400 bg-emerald-950/40' },
             ].map((step) => {
               const count = summary?.soStatusCounts?.[step.key] || 0;
               return (
-                <div key={step.key} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-1">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase block border ${step.bg}`}>
+                <div key={step.key} className="p-2.5 rounded-lg bg-[#12141A] border border-[#20242D] space-y-1">
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase block border ${step.border}`}>
                     {step.label}
                   </span>
-                  <p className="text-xl font-black text-white">{count}</p>
+                  <p className="text-xl font-bold text-zinc-100">{count}</p>
                 </div>
               );
             })}
@@ -158,32 +171,32 @@ export default function Dashboard() {
         </div>
 
         {/* Inbound Procurement Pipeline */}
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 shadow-md shadow-black/20 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-[#232730] pb-3">
             <div className="flex items-center gap-2">
-              <IconInbox className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-bold text-white text-base">Inbound Procurement Pipeline</h3>
+              <IconInbox className="w-4 h-4 text-emerald-400" />
+              <h2 className="font-bold text-zinc-100 text-sm tracking-tight">Inbound Procurement Pipeline</h2>
             </div>
-            <Link to="/purchase-orders" className="text-xs text-blue-400 hover:text-blue-300 font-semibold">
-              View All POs →
+            <Link to="/purchase-orders" className="text-xs font-mono text-amber-400 hover:text-amber-300 font-semibold">
+              VIEW_ALL_POS &rarr;
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center font-mono">
             {[
-              { label: 'Draft', key: 'DRAFT', bg: 'bg-slate-800 text-slate-300 border-slate-700' },
-              { label: 'Pending Appr', key: 'PENDING_APPROVAL', bg: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-              { label: 'Approved', key: 'APPROVED', bg: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
-              { label: 'Sent', key: 'SENT', bg: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-              { label: 'Received', key: 'RECEIVED', bg: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+              { label: 'Draft', key: 'DRAFT', border: 'border-zinc-700 text-zinc-400 bg-zinc-900/60' },
+              { label: 'Pending Appr', key: 'PENDING_APPROVAL', border: 'border-amber-500/40 text-amber-300 bg-amber-500/10' },
+              { label: 'Approved', key: 'APPROVED', border: 'border-zinc-500 text-zinc-200 bg-zinc-800/60' },
+              { label: 'Sent', key: 'SENT', border: 'border-amber-600/40 text-amber-400 bg-amber-600/15' },
+              { label: 'Received', key: 'RECEIVED', border: 'border-emerald-500/40 text-emerald-300 bg-emerald-500/10' },
             ].map((step) => {
               const count = summary?.poStatusCounts?.[step.key] || 0;
               return (
-                <div key={step.key} className="p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 space-y-1">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase block border ${step.bg}`}>
+                <div key={step.key} className="p-2.5 rounded-lg bg-[#12141A] border border-[#20242D] space-y-1">
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase block border ${step.border}`}>
                     {step.label}
                   </span>
-                  <p className="text-xl font-black text-white">{count}</p>
+                  <p className="text-xl font-bold text-zinc-100">{count}</p>
                 </div>
               );
             })}
@@ -192,44 +205,44 @@ export default function Dashboard() {
       </div>
 
       {/* Real-time Alerts & Recent Audit Stream */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Active Alerts */}
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 shadow-md shadow-black/20 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Active Operational Alerts */}
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-[#232730] pb-3">
             <div className="flex items-center gap-2">
-              <IconAlertCircle className="w-5 h-5 text-rose-400" />
-              <h3 className="font-bold text-white text-base">Active Operational Alerts</h3>
+              <IconAlertCircle className="w-4 h-4 text-rose-400" />
+              <h2 className="font-bold text-zinc-100 text-sm tracking-tight">Active Operational Alerts</h2>
             </div>
-            <Link to="/alerts" className="text-xs text-blue-400 hover:text-blue-300 font-semibold">
-              Alerts Desk →
+            <Link to="/alerts" className="text-xs font-mono text-amber-400 hover:text-amber-300 font-semibold">
+              ALERTS_DESK &rarr;
             </Link>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {!summary?.activeAlerts || summary.activeAlerts.length === 0 ? (
-              <div className="p-8 text-center text-emerald-400 text-sm flex items-center justify-center gap-2 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
-                <IconCheckCircle className="w-5 h-5" />
-                <span>All systems operating normally. No active alerts.</span>
+              <div className="p-6 text-center text-emerald-400 text-xs font-mono flex items-center justify-center gap-2 bg-emerald-950/20 rounded-lg border border-emerald-900/40">
+                <IconCheckCircle className="w-4 h-4" />
+                <span>ALL WAREHOUSE SIGNALS NOMINAL // NO ACTIVE ALERTS</span>
               </div>
             ) : (
               summary.activeAlerts.slice(0, 5).map((alert: any) => (
                 <div
                   key={alert._id}
-                  className={`p-3.5 rounded-xl border flex items-start justify-between gap-3 text-sm ${
+                  className={`p-3 rounded-lg border flex items-start justify-between gap-3 text-xs ${
                     alert.severity === 'high'
-                      ? 'bg-rose-950/30 border-rose-800/50 text-rose-200'
+                      ? 'bg-rose-950/30 border-rose-900/50 text-rose-200'
                       : alert.severity === 'medium'
-                      ? 'bg-amber-950/30 border-amber-800/50 text-amber-200'
-                      : 'bg-blue-950/30 border-blue-800/50 text-blue-200'
+                      ? 'bg-amber-950/30 border-amber-900/50 text-amber-200'
+                      : 'bg-[#14171E] border-[#262B35] text-zinc-300'
                   }`}
                 >
                   <div>
                     <p className="font-medium text-xs leading-relaxed">{alert.message}</p>
-                    <p className="text-[10px] opacity-70 mt-1">
+                    <p className="text-[10px] font-mono text-zinc-500 mt-1">
                       {new Date(alert.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded bg-slate-950/80 border border-slate-800 shrink-0">
+                  <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase rounded bg-[#0A0B0E] border border-[#232730] shrink-0">
                     {alert.severity}
                   </span>
                 </div>
@@ -238,39 +251,39 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Real-time Audit Stream */}
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 shadow-md shadow-black/20 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        {/* Live Audit Stream */}
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-[#232730] pb-3">
             <div className="flex items-center gap-2">
-              <IconClipboard className="w-5 h-5 text-blue-400" />
-              <h3 className="font-bold text-white text-base">Live Audit Stream</h3>
+              <IconClipboard className="w-4 h-4 text-zinc-400" />
+              <h2 className="font-bold text-zinc-100 text-sm tracking-tight">Live Ledger Audit Stream</h2>
             </div>
-            <Link to="/audit" className="text-xs text-blue-400 hover:text-blue-300 font-semibold">
-              Full Audit Trail →
+            <Link to="/audit" className="text-xs font-mono text-amber-400 hover:text-amber-300 font-semibold">
+              AUDIT_TRAIL &rarr;
             </Link>
           </div>
 
-          <div className="space-y-2.5 divide-y divide-slate-800/80">
+          <div className="space-y-2 divide-y divide-[#1C2028]">
             {!summary?.recentActivity || summary.recentActivity.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 text-sm">No recent activity recorded yet.</div>
+              <div className="p-6 text-center text-zinc-500 text-xs font-mono">No mutations recorded yet.</div>
             ) : (
               summary.recentActivity.map((activity: any) => (
-                <div key={activity._id} className="pt-2.5 first:pt-0 flex items-center justify-between text-xs">
+                <div key={activity._id} className="pt-2 first:pt-0 flex items-center justify-between text-xs">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-200">
+                      <span className="font-semibold text-zinc-200 font-mono text-[11px]">
                         {activity.action.replace(/_/g, ' ')}
                       </span>
-                      <span className="text-blue-400 font-mono text-[10px]">
-                        [{activity.entityType}]
+                      <span className="text-amber-400 font-mono text-[9px] px-1 py-0.2 bg-[#171B22] border border-[#262C38] rounded">
+                        {activity.entityType}
                       </span>
                     </div>
-                    <p className="text-slate-400 mt-0.5 text-[11px]">
-                      By {activity.userId?.name || 'System Auto'} • {new Date(activity.createdAt).toLocaleTimeString()}
+                    <p className="text-zinc-500 mt-0.5 text-[10px] font-mono">
+                      By {activity.userId?.name || 'Automated Daemon'} • {new Date(activity.createdAt).toLocaleTimeString()}
                     </p>
                   </div>
-                  <span className="font-mono text-slate-400 text-[10px] truncate max-w-[100px]">
-                    {activity.entityId?.slice(-6)}
+                  <span className="font-mono text-zinc-500 text-[10px] truncate max-w-[100px]">
+                    #{activity.entityId?.slice(-6)}
                   </span>
                 </div>
               ))
@@ -279,49 +292,52 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Action Dock */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/90 rounded-3xl p-6 sm:p-8 text-white shadow-xl space-y-4">
-        <div>
-          <h3 className="text-xl font-bold">Quick Operations Center</h3>
-          <p className="text-slate-400 text-xs mt-0.5">Accelerate daily warehouse workflows with one click</p>
+      {/* Quick Action Operations Dock */}
+      <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-5 text-zinc-100 shadow-sm space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold tracking-tight">Warehouse Operations Center</h3>
+            <p className="text-zinc-400 text-xs mt-0.5">Rapid dispatch and inventory controls</p>
+          </div>
+          <span className="text-[10px] font-mono text-zinc-500">HOTKEYS_ACTIVE</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
           <Link
             to="/purchase-orders"
-            className="p-4 rounded-2xl bg-slate-950/60 hover:bg-slate-800/80 backdrop-blur-md transition-all text-center space-y-2 border border-slate-800 hover:border-slate-700 flex flex-col items-center justify-center group"
+            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <IconInbox className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <IconInbox className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold block text-slate-200">Create PO</span>
+            <span className="text-xs font-semibold block text-zinc-300">Create PO</span>
           </Link>
           <Link
             to="/sales-orders"
-            className="p-4 rounded-2xl bg-slate-950/60 hover:bg-slate-800/80 backdrop-blur-md transition-all text-center space-y-2 border border-slate-800 hover:border-slate-700 flex flex-col items-center justify-center group"
+            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
           >
-            <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <IconTruck className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <IconTruck className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold block text-slate-200">Fulfill SO</span>
+            <span className="text-xs font-semibold block text-zinc-300">Fulfill SO</span>
           </Link>
           <Link
             to="/inventory"
-            className="p-4 rounded-2xl bg-slate-950/60 hover:bg-slate-800/80 backdrop-blur-md transition-all text-center space-y-2 border border-slate-800 hover:border-slate-700 flex flex-col items-center justify-center group"
+            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
           >
-            <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <IconPackage className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-zinc-300 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <IconPackage className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold block text-slate-200">Adjust Stock</span>
+            <span className="text-xs font-semibold block text-zinc-300">Adjust Stock</span>
           </Link>
           <Link
             to="/warehouses"
-            className="p-4 rounded-2xl bg-slate-950/60 hover:bg-slate-800/80 backdrop-blur-md transition-all text-center space-y-2 border border-slate-800 hover:border-slate-700 flex flex-col items-center justify-center group"
+            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <IconBuilding className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-zinc-300 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <IconBuilding className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold block text-slate-200">Manage Bins</span>
+            <span className="text-xs font-semibold block text-zinc-300">Manage Bins</span>
           </Link>
         </div>
       </div>
