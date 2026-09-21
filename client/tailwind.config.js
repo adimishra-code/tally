@@ -40,6 +40,21 @@ export default {
         },
         success: 'hsl(var(--success))',
         warning: 'hsl(var(--warning))',
+        obsidian: {
+          950: '#090A0C',
+          900: '#0E1014',
+          850: '#13161B',
+          800: '#181C22',
+          750: '#1F242C',
+          700: '#272D37',
+          600: '#353D4A',
+        },
+        brass: {
+          400: '#FBBF24',
+          500: '#F59E0B',
+          600: '#D97706',
+          700: '#B45309',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -48,7 +63,7 @@ export default {
       },
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
     },
   },
