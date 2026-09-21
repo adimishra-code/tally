@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Bin } from '../types';
-import { IconInbox, IconClose } from './Icons';
+import { IconInbox } from './Icons';
 
 interface ReceiveGoodsModalProps {
   po: any;
@@ -116,146 +116,143 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
   const hasVariance = lines.some((l) => l.receivedQty > l.remaining);
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-100">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-zinc-100">
         {/* Modal Header */}
-        <div className="p-6 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
-                <IconInbox className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white tracking-tight">
-                  Receive Goods: <span className="font-mono text-cyan-400">{po.poNumber}</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Supplier: <span className="font-medium text-slate-200">{po.supplierName}</span> • Warehouse:{' '}
-                  <span className="font-medium text-slate-200">{po.warehouseId?.name || 'Warehouse'}</span>
-                </p>
-              </div>
+        <div className="p-5 border-b border-[#232730] flex items-center justify-between bg-[#12141A]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#191D26] border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
+              <IconInbox className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-zinc-100 font-mono tracking-tight">
+                INBOUND_RECEIPT // <span className="text-amber-400">{po.poNumber}</span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Vendor: <span className="font-semibold text-zinc-200">{po.supplierName}</span> • Receiving Facility:{' '}
+                <span className="font-semibold text-zinc-200">{po.warehouseId?.name || 'Warehouse'}</span>
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800/80 transition-colors"
+            className="text-zinc-400 hover:text-zinc-100 p-1.5 rounded hover:bg-[#1A1E26] transition-colors font-mono text-xs"
           >
-            <IconClose className="w-5 h-5" />
+            [ESC]
           </button>
         </div>
 
         {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line Items to Receive</span>
-            <div className="flex items-center gap-3">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-[#232730] text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+            <span>Inbound Shipment Line Items</span>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleReceiveAll}
-                className="text-xs font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
+                className="text-amber-400 hover:text-amber-300 font-bold transition-colors"
               >
-                Receive All Remaining
+                [RECEIVE_ALL_REMAINING]
               </button>
-              <span className="text-slate-700">|</span>
+              <span className="text-zinc-700">|</span>
               <button
                 type="button"
                 onClick={handleClearAll}
-                className="text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+                className="text-zinc-500 hover:text-zinc-300 transition-colors"
               >
-                Clear
+                [CLEAR]
               </button>
             </div>
           </div>
+
           {hasVariance && (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300 flex items-start gap-2.5">
-              <span className="text-base">⚠️</span>
+            <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-lg text-xs font-mono text-amber-300 flex items-start gap-2">
+              <span className="text-amber-400 font-bold">⚠️</span>
               <div>
-                <strong className="font-semibold text-amber-200">Over-receipt Variance Detected:</strong> One or more items have received quantities higher than the remaining ordered quantity. This will be flagged in the receiving audit.
+                <strong className="text-amber-200">Over-Receipt Notice:</strong> One or more items exceed remaining ordered count. This will log a variance notice on the inbound receipt.
               </div>
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {lines.map((line, index) => {
               const isOver = line.receivedQty > line.remaining;
               return (
                 <div
                   key={line.productId}
-                  className={`p-4 rounded-xl border transition-all ${
-                    isOver ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-950/60 border-slate-800/80'
+                  className={`p-3.5 rounded-lg border transition-all ${
+                    isOver ? 'bg-amber-950/25 border-amber-800/50' : 'bg-[#12141A] border-[#232730]'
                   }`}
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800/80">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold bg-slate-900 text-slate-200 px-2 py-0.5 rounded border border-slate-700">
-                          {line.productSku}
-                        </span>
-                        <h4 className="font-semibold text-white text-sm sm:text-base">{line.productName}</h4>
-                      </div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2 pb-2 border-b border-[#1C2028]">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold bg-[#181C25] text-amber-400 px-2 py-0.5 rounded border border-[#2B313E]">
+                        {line.productSku}
+                      </span>
+                      <h4 className="font-semibold text-zinc-100 text-xs">{line.productName}</h4>
                     </div>
-                    <div className="text-xs text-slate-400 flex items-center gap-4">
-                      <span>Ordered: <strong className="text-slate-200 font-mono">{line.orderedQty}</strong></span>
-                      <span>Already Recv: <strong className="text-slate-200 font-mono">{line.alreadyReceived}</strong></span>
-                      <span className="text-cyan-400 font-bold font-mono">Remaining: {line.remaining}</span>
+                    <div className="text-[11px] font-mono text-zinc-400 flex items-center gap-3">
+                      <span>ORDERED: <strong className="text-zinc-200">{line.orderedQty}</strong></span>
+                      <span>RECEIVED: <strong className="text-zinc-200">{line.alreadyReceived}</strong></span>
+                      <span className="text-amber-400 font-bold">PENDING: {line.remaining}</span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Receiving Now*
+                      <label className="block text-[10px] font-mono font-bold text-zinc-400 mb-1">
+                        RECEIVING_QTY*
                       </label>
                       <input
                         type="number"
                         min="0"
                         value={line.receivedQty}
                         onChange={(e) => updateLineField(index, 'receivedQty', parseInt(e.target.value) || 0)}
-                        className={`w-full px-3 py-2 text-sm bg-slate-900 border rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono font-bold ${
-                          isOver ? 'border-amber-500/50 text-amber-300' : 'border-slate-700 text-white'
+                        className={`w-full px-2.5 py-1.5 text-xs bg-[#090A0C] border rounded-md outline-none font-mono font-bold ${
+                          isOver ? 'border-amber-500/60 text-amber-300' : 'border-[#262B35] text-zinc-100 focus:border-amber-500'
                         }`}
                         required
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Batch / Lot Number
+                      <label className="block text-[10px] font-mono font-bold text-zinc-400 mb-1">
+                        BATCH_LOT_NUMBER
                       </label>
                       <input
                         type="text"
                         value={line.batchNumber}
                         onChange={(e) => updateLineField(index, 'batchNumber', e.target.value)}
-                        placeholder="e.g. LOT-2026-A"
-                        className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono text-white placeholder-slate-500"
+                        placeholder="LOT-2026-A"
+                        className="w-full px-2.5 py-1.5 text-xs bg-[#090A0C] border border-[#262B35] rounded-md focus:border-amber-500 outline-none font-mono text-zinc-100 placeholder-zinc-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Expiration Date
+                      <label className="block text-[10px] font-mono font-bold text-zinc-400 mb-1">
+                        EXPIRATION_DATE
                       </label>
                       <input
                         type="date"
                         value={line.expiryDate}
                         onChange={(e) => updateLineField(index, 'expiryDate', e.target.value)}
-                        className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono text-white"
+                        className="w-full px-2.5 py-1.5 text-xs bg-[#090A0C] border border-[#262B35] rounded-md focus:border-amber-500 outline-none font-mono text-zinc-100"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1">
-                        Assign Bin Location
+                      <label className="block text-[10px] font-mono font-bold text-zinc-400 mb-1">
+                        BIN_ZONE_ASSIGNMENT
                       </label>
                       <select
                         value={line.binId}
                         onChange={(e) => updateLineField(index, 'binId', e.target.value)}
-                        className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono text-white"
+                        className="w-full px-2.5 py-1.5 text-xs bg-[#090A0C] border border-[#262B35] rounded-md focus:border-amber-500 outline-none font-mono text-zinc-100"
                       >
-                        <option value="" className="bg-slate-900 text-slate-300">General Floor</option>
+                        <option value="">General Floor Buffer</option>
                         {bins?.map((bin) => (
-                          <option key={bin._id} value={bin._id} className="bg-slate-900 text-white">
-                            {bin.code} {bin.zone ? `(${bin.zone})` : ''}
+                          <option key={bin._id} value={bin._id}>
+                            {bin.code} {bin.zone ? `[${bin.zone}]` : ''}
                           </option>
                         ))}
                       </select>
@@ -266,24 +263,24 @@ export default function ReceiveGoodsModal({ po, onClose, onSuccess }: ReceiveGoo
             })}
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-400">
-              Receiving goods writes immutable <code className="font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">PO_RECEIPT</code> ledger entries and updates real-time stock balances.
+          <div className="pt-4 border-t border-[#232730] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-[11px] text-zinc-500 font-mono">
+              Writes immutable <code className="text-emerald-400 bg-[#161921] px-1 py-0.5 rounded border border-[#272D3A]">PO_RECEIPT</code> positive ledger entries and updates facility balance.
             </p>
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
+                className="px-4 py-2 border border-[#262B35] text-zinc-400 hover:text-zinc-100 hover:bg-[#161922] font-mono font-medium rounded-lg transition-colors text-xs"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 type="submit"
                 disabled={receiveMutation.isPending}
-                className="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-mono font-bold rounded-lg transition-all shadow-xs disabled:opacity-50 text-xs btn-tactile"
               >
-                {receiveMutation.isPending ? 'Processing Receipt...' : 'Confirm & Post Goods Receipt'}
+                {receiveMutation.isPending ? 'COMMITTING_RECEIPT...' : 'CONFIRM_GOODS_RECEIPT'}
               </button>
             </div>
           </div>

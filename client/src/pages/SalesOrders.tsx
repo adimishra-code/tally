@@ -60,7 +60,7 @@ export default function SalesOrders() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `sales_orders_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `tally_sales_orders_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -147,26 +147,26 @@ export default function SalesOrders() {
     createMutation.mutate(formData);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'DRAFT':
-        return 'bg-slate-800 text-slate-300 border-slate-700';
+        return 'bg-zinc-900 text-zinc-400 border-zinc-700';
       case 'CONFIRMED':
-        return 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+        return 'bg-[#141720] text-amber-400 border-amber-500/40';
       case 'PICKING':
-        return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+        return 'bg-amber-950/40 text-amber-300 border-amber-600/50';
       case 'PACKED':
-        return 'bg-purple-500/15 text-purple-300 border-purple-500/30';
+        return 'bg-zinc-800 text-zinc-200 border-zinc-600';
       case 'PARTIALLY_SHIPPED':
-        return 'bg-orange-500/15 text-orange-300 border-orange-500/30';
+        return 'bg-amber-950/40 text-amber-400 border-amber-700/50';
       case 'SHIPPED':
-        return 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+        return 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40';
       case 'DELIVERED':
-        return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+        return 'bg-emerald-950/50 text-emerald-400 border-emerald-600/50';
       case 'CANCELLED':
-        return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+        return 'bg-rose-950/40 text-rose-400 border-rose-800/60';
       default:
-        return 'bg-slate-800 text-slate-400 border-slate-700';
+        return 'bg-zinc-900 text-zinc-400 border-zinc-700';
     }
   };
 
@@ -186,111 +186,145 @@ export default function SalesOrders() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#232730] pb-5">
         <div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Sales Orders</h2>
-          <p className="text-slate-400 text-sm mt-0.5">Outbound customer fulfillment and shipments</p>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 led-pulse-amber" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight">
+              Outbound Sales Orders
+            </h1>
+          </div>
+          <p className="text-zinc-400 text-xs sm:text-sm mt-1 font-mono">
+            Customer order demand • Wave picking • Dispatch & delivery tracking
+          </p>
         </div>
         <div className="flex items-center gap-2.5 flex-wrap">
           {sos && sos.length > 0 && (
             <button
               onClick={handleExportCsv}
-              className="px-4 py-2.5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold rounded-xl hover:bg-slate-800 transition-all shadow-sm text-sm flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-[#12141A] border border-[#262B35] hover:border-amber-500/50 hover:bg-[#181C24] text-zinc-200 font-mono font-semibold rounded-lg transition-all shadow-xs text-xs flex items-center gap-1.5 btn-tactile"
             >
-              <IconExport className="w-4 h-4 text-slate-400" />
-              <span>Export CSV</span>
+              <IconExport className="w-4 h-4 text-amber-400" />
+              <span>EXPORT_CSV</span>
             </button>
           )}
           <button
             onClick={() => setShowForm(!showForm)}
-            className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl transition-all shadow-md shadow-blue-500/25 text-sm"
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-bold rounded-lg transition-all shadow-xs text-xs btn-tactile"
           >
-            {showForm ? 'Cancel' : '+ New Sales Order'}
+            {showForm ? 'DISMISS_FORM' : '+ CREATE_SALES_ORDER'}
           </button>
         </div>
       </div>
 
-      {/* KPI Metrics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Sales Orders</div>
-          <div className="text-2xl sm:text-3xl font-black text-white">{totalOrders}</div>
-          <div className="text-xs text-slate-400 mt-1">Orders placed to date</div>
+      {/* KPI Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+            Total Orders
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-zinc-100 font-mono">{totalOrders}</div>
+          <div className="text-[11px] text-zinc-500 mt-1 font-mono">ALL_OUTBOUND_ORDERS</div>
         </div>
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total Units Ordered</div>
-          <div className="text-2xl sm:text-3xl font-black text-blue-400 font-mono">{totalUnitsOrdered.toLocaleString()}</div>
-          <div className="text-xs text-slate-400 mt-1">Aggregated line demand</div>
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+            Units Demanded
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-amber-400 font-mono">
+            {totalUnitsOrdered.toLocaleString()}
+          </div>
+          <div className="text-[11px] text-zinc-500 mt-1 font-mono">ORDERED_UNITS</div>
         </div>
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Needs Fulfillment</div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-400">{needsActionCount}</div>
-          <div className="text-xs text-slate-400 mt-1">Draft, Confirmed, Picking, Packed</div>
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+            Fulfillment Queue
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-amber-500 font-mono">{needsActionCount}</div>
+          <div className="text-[11px] text-zinc-500 mt-1 font-mono">CONFIRMED_OR_PICKING</div>
         </div>
-        <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-5 shadow-md shadow-black/20">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Dispatched / Done</div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400">{inTransitOrDelivered}</div>
-          <div className="text-xs text-slate-400 mt-1">Shipped & Delivered</div>
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm">
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400 mb-1">
+            Dispatched / Done
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">
+            {inTransitOrDelivered}
+          </div>
+          <div className="text-[11px] text-zinc-500 mt-1 font-mono">SHIPPED_OR_DELIVERED</div>
         </div>
       </div>
 
-      {/* Search & Filters */}
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 p-4 flex flex-col md:flex-row items-center gap-3 shadow-md shadow-black/20">
+      {/* Filter and Search Bar */}
+      <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-3 flex flex-col md:flex-row items-center gap-3 shadow-sm">
         <div className="relative flex-1 w-full">
-          <span className="absolute left-3.5 top-3 text-slate-500">🔍</span>
           <input
             type="text"
             placeholder="Search by Order # or Customer name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+            className="w-full px-3.5 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 placeholder-zinc-600 focus:border-amber-500 outline-none text-xs font-mono"
           />
         </div>
         <div className="w-full md:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full md:w-64 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-medium"
+            className="w-full md:w-56 px-3 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-xs font-mono text-zinc-300 outline-none focus:border-amber-500"
           >
-            <option value="">All Fulfillment Statuses</option>
-            <option value="DRAFT">Draft</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="PICKING">Picking</option>
-            <option value="PACKED">Packed</option>
-            <option value="PARTIALLY_SHIPPED">Partially Shipped</option>
-            <option value="SHIPPED">Shipped</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
+            <option value="">ALL_STATUSES</option>
+            <option value="DRAFT">DRAFT</option>
+            <option value="CONFIRMED">CONFIRMED</option>
+            <option value="PICKING">PICKING</option>
+            <option value="PACKED">PACKED</option>
+            <option value="PARTIALLY_SHIPPED">PARTIALLY_SHIPPED</option>
+            <option value="SHIPPED">SHIPPED</option>
+            <option value="DELIVERED">DELIVERED</option>
+            <option value="CANCELLED">CANCELLED</option>
           </select>
         </div>
       </div>
 
       {/* Create Form */}
       {showForm && (
-        <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl border border-slate-800/80 p-6 space-y-4 shadow-xl shadow-black/25 text-white">
-          <h3 className="text-lg font-bold text-white mb-2">New Sales Order</h3>
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-5 space-y-4 shadow-lg text-zinc-100">
+          <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+            <h3 className="text-sm font-bold text-zinc-100 font-mono uppercase">
+              Initiate Sales Order (Outbound)
+            </h3>
+            <button
+              onClick={() => setShowForm(false)}
+              className="text-zinc-500 hover:text-zinc-200 font-mono text-xs"
+            >
+              [CLOSE]
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Customer Name*</label>
+                <label className="block text-[10px] font-mono font-bold uppercase text-zinc-400 mb-1">
+                  CUSTOMER_ACCOUNT*
+                </label>
                 <input
                   type="text"
                   value={formData.customerName}
                   onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                  placeholder="e.g. Apex Global Logistics"
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  placeholder="e.g. Acme Industrial Supply"
+                  className="w-full px-3.5 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 placeholder-zinc-600 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Fulfillment Warehouse*</label>
+                <label className="block text-[10px] font-mono font-bold uppercase text-zinc-400 mb-1">
+                  DISPATCH_WAREHOUSE*
+                </label>
                 <select
                   value={formData.warehouseId}
                   onChange={(e) => setFormData({ ...formData, warehouseId: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
+                  className="w-full px-3.5 py-2 bg-[#12141A] border border-[#262B35] rounded-lg text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
                   required
                 >
-                  <option value="">Select warehouse...</option>
+                  <option value="">Choose dispatch facility...</option>
                   {warehouses?.map((wh: any) => (
                     <option key={wh._id} value={wh._id}>
                       {wh.name}
@@ -300,147 +334,167 @@ export default function SalesOrders() {
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-semibold text-slate-300">Line Items*</label>
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-mono font-bold uppercase text-zinc-400">
+                  DEMAND_LINE_ITEMS*
+                </label>
                 <button
                   type="button"
                   onClick={addLine}
-                  className="text-xs text-blue-400 hover:text-blue-300 font-semibold"
+                  className="text-xs font-mono font-semibold text-amber-400 hover:text-amber-300"
                 >
-                  + Add Line
+                  + ADD_LINE
                 </button>
               </div>
-              <div className="space-y-2">
-                {formData.lines.map((line, index) => (
-                  <div key={index} className="flex gap-2">
-                    <select
-                      value={line.productId}
-                      onChange={(e) => updateLine(index, 'productId', e.target.value)}
-                      className="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm"
-                      required
+
+              {formData.lines.map((line, index) => (
+                <div key={index} className="flex gap-2 p-2.5 bg-[#12141A] rounded-lg border border-[#232730]">
+                  <select
+                    value={line.productId}
+                    onChange={(e) => updateLine(index, 'productId', e.target.value)}
+                    className="flex-1 px-3 py-1.5 bg-[#090A0C] border border-[#262B35] rounded-md text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono"
+                    required
+                  >
+                    <option value="">Select SKU...</option>
+                    {products?.map((p: any) => (
+                      <option key={p._id} value={p._id}>
+                        {p.sku} — {p.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    min="1"
+                    value={line.orderedQty}
+                    onChange={(e) => updateLine(index, 'orderedQty', parseInt(e.target.value) || 1)}
+                    placeholder="Qty"
+                    className="w-24 px-3 py-1.5 bg-[#090A0C] border border-[#262B35] rounded-md text-zinc-100 focus:border-amber-500 outline-none text-xs font-mono text-center"
+                    required
+                  />
+                  {formData.lines.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeLine(index)}
+                      className="px-2 text-rose-400 hover:text-rose-300 font-mono text-xs"
                     >
-                      <option value="">Select product...</option>
-                      {products?.map((p: any) => (
-                        <option key={p._id} value={p._id}>
-                          {p.sku} - {p.name}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      min="1"
-                      value={line.orderedQty}
-                      onChange={(e) => updateLine(index, 'orderedQty', parseInt(e.target.value) || 1)}
-                      placeholder="Qty"
-                      className="w-28 px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-sm font-mono"
-                      required
-                    />
-                    {formData.lines.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeLine(index)}
-                        className="px-3 py-2 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
 
-            <button
-              type="submit"
-              disabled={createMutation.isPending}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors shadow-md shadow-blue-500/25 disabled:opacity-50 text-sm"
-            >
-              {createMutation.isPending ? 'Creating...' : 'Create Sales Order'}
-            </button>
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-4 py-2 border border-[#262B35] text-zinc-400 hover:text-zinc-100 font-mono text-xs rounded-lg"
+              >
+                CANCEL
+              </button>
+              <button
+                type="submit"
+                disabled={createMutation.isPending}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-mono font-bold text-xs rounded-lg shadow-xs btn-tactile"
+              >
+                {createMutation.isPending ? 'CREATING...' : 'COMMIT_SALES_ORDER'}
+              </button>
+            </div>
           </form>
         </div>
       )}
 
-      {/* SO List */}
-      <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800/80 overflow-hidden shadow-md shadow-black/20">
+      {/* Orders Table */}
+      <div className="bg-[#0E1014] rounded-xl border border-[#232730] overflow-hidden shadow-sm">
         {isLoading ? (
-          <div className="p-12 text-center text-slate-500">Loading sales orders...</div>
+          <div className="p-12 text-center text-zinc-500 font-mono text-xs">
+            QUERYING OUTBOUND FULFILLMENT STREAM...
+          </div>
         ) : !sos || sos.length === 0 ? (
-          <div className="p-12 text-center text-slate-500">No sales orders found</div>
+          <div className="p-12 text-center text-zinc-500 font-mono text-xs">
+            NO SALES ORDERS FOUND
+          </div>
         ) : (
-          <div className="divide-y divide-slate-800/50">
+          <div className="divide-y divide-[#1C2028]">
             {sos.map((so: any) => {
               const canPick = so.status === 'CONFIRMED';
               const canShip = ['PICKING', 'PACKED', 'PARTIALLY_SHIPPED'].includes(so.status);
               const anyShipped = so.lines.some((l: any) => l.shippedQty > 0);
 
               return (
-                <div key={so._id} className="p-6 hover:bg-slate-800/40 transition-colors">
-                  <div className="flex items-start justify-between mb-3">
+                <div key={so._id} className="p-4 hover:bg-[#13161C] transition-colors industrial-row">
+                  <div className="flex items-start justify-between mb-2.5">
                     <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="text-lg font-bold text-white font-mono">{so.orderNumber}</h3>
-                        <span className={`px-2.5 py-1 text-xs font-bold rounded-lg uppercase border ${getStatusColor(so.status)}`}>
+                      <div className="flex items-center gap-2.5 mb-1">
+                        <code className="text-xs font-mono text-amber-400 font-bold bg-[#171A21] px-2 py-0.5 rounded border border-[#2B313E]">
+                          {so.orderNumber}
+                        </code>
+                        <span
+                          className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded uppercase border ${getStatusBadge(
+                            so.status
+                          )}`}
+                        >
                           {so.status.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400">
-                        Customer: <span className="font-semibold text-slate-200">{so.customerName}</span> • Warehouse:{' '}
-                        <span className="font-semibold text-slate-200">{so.warehouseId?.name || 'Warehouse'}</span> • Created:{' '}
+                      <p className="text-xs text-zinc-400">
+                        Customer: <span className="font-semibold text-zinc-200">{so.customerName}</span> • Warehouse:{' '}
+                        <span className="font-semibold text-zinc-200">{so.warehouseId?.name || 'Warehouse'}</span> •{' '}
                         {new Date(so.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-slate-200 font-mono">{so.lines.length} Line Items</div>
+                    <div className="text-right font-mono text-xs font-bold text-zinc-300">
+                      {so.lines.length} Line Items
                     </div>
                   </div>
 
                   {/* Lines Breakdown */}
-                  <div className="mb-4 bg-slate-950/60 rounded-xl p-3.5 border border-slate-800/60 space-y-1.5 font-mono text-xs">
+                  <div className="mb-3 bg-[#12141A] rounded-lg p-2.5 border border-[#20242D] space-y-1 font-mono text-xs">
                     {so.lines.map((line: any, idx: number) => (
-                      <div key={idx} className="text-slate-300 flex items-center justify-between">
+                      <div key={idx} className="text-zinc-300 flex items-center justify-between">
                         <div>
-                          • <span className="font-bold text-white">{line.orderedQty}×</span>{' '}
-                          {line.productId?.sku ? <span className="text-blue-400 font-semibold">{line.productId.sku} - </span> : null}
+                          • <span className="font-bold text-zinc-100">{line.orderedQty}×</span>{' '}
+                          {line.productId?.sku ? <span className="text-amber-400 font-semibold">{line.productId.sku} - </span> : null}
                           {line.productId?.name || 'Product'}
                         </div>
-                        <div className="flex gap-4 text-slate-400">
-                          <span>Picked: <strong className="text-amber-300">{line.pickedQty || 0}</strong></span>
-                          <span>Shipped: <strong className="text-emerald-400">{line.shippedQty || 0}</strong></span>
+                        <div className="flex gap-3 text-[11px] text-zinc-500">
+                          <span>PICKED: <strong className="text-amber-400">{line.pickedQty || 0}</strong></span>
+                          <span>SHIPPED: <strong className="text-emerald-400">{line.shippedQty || 0}</strong></span>
                         </div>
                       </div>
                     ))}
                   </div>
 
                   {/* Action Controls */}
-                  <div className="flex gap-2 flex-wrap items-center">
+                  <div className="flex gap-2 flex-wrap items-center font-mono text-[10px]">
                     {canPick && (
                       <button
                         onClick={() => setPickingSo(so)}
-                        className="px-3.5 py-1.5 text-xs bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                        className="px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold rounded transition-colors flex items-center gap-1.5"
                       >
-                        <IconPackage className="w-4 h-4" />
-                        <span>Pick Items</span>
+                        <IconPackage className="w-3.5 h-3.5" />
+                        <span>PICK_ITEMS</span>
                       </button>
                     )}
 
                     {canShip && (
                       <button
                         onClick={() => setShippingSo(so)}
-                        className="px-3.5 py-1.5 text-xs bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5"
+                        className="px-3 py-1 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-400 border border-emerald-500/40 font-bold rounded transition-colors flex items-center gap-1.5"
                       >
-                        <IconTruck className="w-4 h-4" />
-                        <span>Ship Order</span>
+                        <IconTruck className="w-3.5 h-3.5" />
+                        <span>SHIP_ORDER</span>
                       </button>
                     )}
 
                     {anyShipped && (
                       <button
                         onClick={() => setViewingShipmentsSo(so)}
-                        className="px-3.5 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+                        className="px-2.5 py-1 bg-[#161921] hover:bg-[#1E232E] text-zinc-300 border border-[#272D3A] rounded transition-colors flex items-center gap-1.5"
                       >
-                        <IconClipboard className="w-4 h-4 text-slate-400" />
-                        <span>Shipments Tracking</span>
+                        <IconClipboard className="w-3.5 h-3.5 text-zinc-500" />
+                        <span>WAYBILL_TRACKING</span>
                       </button>
                     )}
 
@@ -449,9 +503,9 @@ export default function SalesOrders() {
                         key={action}
                         onClick={() => transitionMutation.mutate({ id: so._id, nextStatus: action })}
                         disabled={transitionMutation.isPending}
-                        className="px-3 py-1.5 text-xs bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/30 font-semibold rounded-lg transition-colors disabled:opacity-50"
+                        className="px-2.5 py-1 bg-[#161921] hover:bg-[#1E232E] hover:border-amber-500/40 text-zinc-300 hover:text-amber-400 border border-[#272D3A] rounded transition-colors disabled:opacity-50"
                       >
-                        {action.replace(/_/g, ' ')}
+                        &rarr; {action.replace(/_/g, ' ')}
                       </button>
                     ))}
                   </div>
@@ -486,51 +540,51 @@ export default function SalesOrders() {
         />
       )}
 
-      {/* Shipments Drawer / Modal */}
+      {/* Shipments Modal */}
       {viewingShipmentsSo && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-4 max-h-[85vh] flex flex-col text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4 max-h-[85vh] flex flex-col text-zinc-100">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
               <div>
-                <h3 className="text-lg font-bold text-white font-mono">
-                  Shipments for {viewingShipmentsSo.orderNumber}
+                <h3 className="text-sm font-bold text-zinc-100 font-mono uppercase">
+                  Waybill Records: {viewingShipmentsSo.orderNumber}
                 </h3>
-                <p className="text-xs text-slate-400">Customer: {viewingShipmentsSo.customerName}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">Customer: {viewingShipmentsSo.customerName}</p>
               </div>
               <button
                 onClick={() => setViewingShipmentsSo(null)}
-                className="text-slate-400 hover:text-white text-lg font-bold"
+                className="text-zinc-400 hover:text-zinc-100 font-mono text-xs"
               >
-                ✕
+                [ESC]
               </button>
             </div>
 
-            <div className="overflow-y-auto flex-1 divide-y divide-slate-800/80">
+            <div className="overflow-y-auto flex-1 divide-y divide-[#1C2028]">
               {isLoadingShipments ? (
-                <div className="py-8 text-center text-slate-500 text-sm">Loading shipments...</div>
+                <div className="py-8 text-center text-zinc-500 font-mono text-xs">QUERYING CARRIER TRACKING...</div>
               ) : !shipments || shipments.length === 0 ? (
-                <div className="py-8 text-center text-slate-500 text-sm">No shipments found for this order.</div>
+                <div className="py-8 text-center text-zinc-500 font-mono text-xs">No dispatched shipments logged.</div>
               ) : (
                 shipments.map((s: any) => (
-                  <div key={s._id} className="py-4 space-y-2">
-                    <div className="flex items-center justify-between text-sm">
+                  <div key={s._id} className="py-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-200 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-lg text-xs">
+                        <span className="font-bold text-zinc-200 bg-[#12141A] border border-[#262B35] px-2 py-0.5 rounded font-mono">
                           {s.carrier || 'Standard'}
                         </span>
                         {s.trackingNumber && (
-                          <span className="font-mono text-xs text-blue-400 font-semibold">
+                          <span className="font-mono text-xs text-amber-400 font-bold">
                             AWB: {s.trackingNumber}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-[11px] font-mono text-zinc-500">
                         {new Date(s.createdAt).toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 font-mono space-y-1">
-                      <div className="font-bold text-slate-200 mb-1">Dispatched Lines:</div>
+                    <div className="text-xs text-zinc-300 bg-[#12141A] p-3 rounded-lg border border-[#20242D] font-mono space-y-1">
+                      <div className="font-bold text-zinc-400 text-[10px] uppercase mb-1">Dispatched Manifest:</div>
                       {s.lines.map((l: any, idx: number) => (
                         <div key={idx} className="flex justify-between">
                           <span>{l.productId?.name || 'Product'}</span>
@@ -543,12 +597,12 @@ export default function SalesOrders() {
               )}
             </div>
 
-            <div className="pt-2 border-t border-slate-800 text-right">
+            <div className="pt-2 border-t border-[#232730] text-right">
               <button
                 onClick={() => setViewingShipmentsSo(null)}
-                className="px-4 py-2 bg-slate-800 text-slate-200 font-medium rounded-xl hover:bg-slate-700 transition-colors text-sm"
+                className="px-4 py-1.5 bg-[#12141A] text-zinc-300 border border-[#262B35] font-mono font-medium rounded-lg hover:bg-[#181C25] transition-colors text-xs"
               >
-                Close
+                DISMISS
               </button>
             </div>
           </div>

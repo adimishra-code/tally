@@ -67,7 +67,7 @@ export default function Warehouses() {
     mutationFn: (data: typeof warehouseForm) => api.post('/warehouses', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
-      toast.success('Warehouse created successfully');
+      toast.success('Warehouse facility provisioned');
       setShowAddWarehouse(false);
       setWarehouseForm({ name: '', address: '' });
     },
@@ -81,7 +81,7 @@ export default function Warehouses() {
       api.patch(`/warehouses/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
-      toast.success('Warehouse updated successfully');
+      toast.success('Warehouse facility updated');
       setEditingWarehouse(null);
     },
     onError: (error: any) => {
@@ -93,7 +93,7 @@ export default function Warehouses() {
     mutationFn: (id: string) => api.delete(`/warehouses/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
-      toast.success('Warehouse deactivated successfully');
+      toast.success('Warehouse facility decommissioned');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to deactivate warehouse');
@@ -105,7 +105,7 @@ export default function Warehouses() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bins', selectedWarehouse?._id] });
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
-      toast.success('Bin location added');
+      toast.success('Bin location mapped');
       setShowAddBin(false);
       setBinForm({ code: '', zone: '' });
     },
@@ -119,7 +119,7 @@ export default function Warehouses() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bins', selectedWarehouse?._id] });
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
-      toast.success('Bin deleted');
+      toast.success('Bin location removed');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.error || 'Failed to delete bin');
@@ -149,89 +149,90 @@ export default function Warehouses() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#232730] pb-5">
         <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
-              <IconBuilding className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Warehouses & Bins</h2>
-              <p className="text-xs sm:text-sm text-slate-400">Manage physical facilities, zones, and granular bin locations</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="text-[11px] font-mono uppercase tracking-widest text-amber-500/90 font-semibold">Facilities // Site Topology</span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Warehouse Facilities & Bins</h1>
+          <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">Manage distribution centers, physical zones, and granular aisle/rack coordinates</p>
         </div>
+
         <button
           onClick={() => setShowAddWarehouse(true)}
-          className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-sm font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 flex items-center gap-2 self-start sm:self-auto"
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg transition-all shadow-md shadow-amber-500/10 text-xs font-mono flex items-center gap-1.5 self-start md:self-auto"
         >
-          <span>+</span>
-          <span>Add Warehouse</span>
+          <span>+ Provision Facility</span>
         </button>
       </div>
 
-      {/* KPI Metrics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Warehouses</div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-white">{totalWarehouses}</div>
-          <div className="text-xs text-slate-500 mt-1">Configured facilities</div>
+      {/* Telemetry KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-3.5">
+          <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Total Sites</div>
+          <div className="text-2xl font-bold font-mono text-white mt-1">{totalWarehouses}</div>
+          <div className="text-[11px] text-zinc-400 mt-0.5">Registered network nodes</div>
         </div>
-        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Active Locations</div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">{activeCount}</div>
-          <div className="text-xs text-slate-500 mt-1">Operational facilities</div>
+
+        <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-3.5">
+          <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Operational Sites</div>
+          <div className="text-2xl font-bold font-mono text-emerald-400 mt-1">{activeCount}</div>
+          <div className="text-[11px] text-zinc-400 mt-0.5">Active fulfillment hubs</div>
         </div>
-        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Inactive Locations</div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-slate-400">{inactiveCount}</div>
-          <div className="text-xs text-slate-500 mt-1">Decommissioned / draft</div>
+
+        <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-3.5">
+          <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Decommissioned</div>
+          <div className="text-2xl font-bold font-mono text-zinc-500 mt-1">{inactiveCount}</div>
+          <div className="text-[11px] text-zinc-400 mt-0.5">Offline or staging facilities</div>
         </div>
-        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 hover:border-slate-700 transition-all">
-          <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Selected Facility Bins</div>
-          <div className="text-2xl sm:text-3xl font-bold font-mono text-cyan-400">
-            {selectedWarehouse ? bins?.length ?? 0 : 'None'}
+
+        <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-3.5">
+          <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Active Focus Bins</div>
+          <div className="text-2xl font-bold font-mono text-amber-400 mt-1">
+            {selectedWarehouse ? bins?.length ?? 0 : '0'}
           </div>
-          <div className="text-xs text-slate-400 mt-1 truncate">
-            {selectedWarehouse ? selectedWarehouse.name : 'Click card below to select'}
+          <div className="text-[11px] text-zinc-400 mt-0.5 truncate">
+            {selectedWarehouse ? selectedWarehouse.name : 'Select facility below'}
           </div>
         </div>
       </div>
 
-      {/* Warehouse Search & Status Filter */}
-      <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col md:flex-row items-center gap-3">
+      {/* Search & Filter Bar */}
+      <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-3 flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
-          <span className="absolute left-3.5 top-2.5 text-slate-500 text-sm">🔍</span>
+          <span className="absolute left-3 top-2.5 text-zinc-500 text-xs font-mono">SITE://</span>
           <input
             type="text"
-            placeholder="Search warehouses by name or address..."
+            placeholder="Search facility name, street address, or dock identifier..."
             value={warehouseSearch}
             onChange={(e) => setWarehouseSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-950/60 border border-slate-800 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-sm text-white placeholder-slate-500"
+            className="w-full pl-16 pr-4 py-2 bg-[#090A0C] border border-[#232730] rounded-lg text-zinc-100 placeholder-zinc-600 focus:border-amber-500/50 outline-none text-xs font-mono"
           />
         </div>
-        <div className="flex items-center bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs font-medium w-full md:w-auto">
+
+        <div className="flex items-center bg-[#090A0C] p-1 rounded-lg border border-[#232730] text-xs font-mono w-full md:w-auto">
           <button
             onClick={() => setStatusFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg transition-colors ${
-              statusFilter === 'ALL' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded transition-colors ${
+              statusFilter === 'ALL' ? 'bg-[#181B22] text-white' : 'text-zinc-400 hover:text-white'
             }`}
           >
             All ({totalWarehouses})
           </button>
           <button
             onClick={() => setStatusFilter('ACTIVE')}
-            className={`px-3 py-1.5 rounded-lg transition-colors ${
-              statusFilter === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300 shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded transition-colors ${
+              statusFilter === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-300' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Active ({activeCount})
           </button>
           <button
             onClick={() => setStatusFilter('INACTIVE')}
-            className={`px-3 py-1.5 rounded-lg transition-colors ${
-              statusFilter === 'INACTIVE' ? 'bg-slate-800 text-slate-200 shadow-sm' : 'text-slate-400 hover:text-white'
+            className={`px-3 py-1 rounded transition-colors ${
+              statusFilter === 'INACTIVE' ? 'bg-[#181B22] text-zinc-300' : 'text-zinc-400 hover:text-white'
             }`}
           >
             Inactive ({inactiveCount})
@@ -240,14 +241,14 @@ export default function Warehouses() {
       </div>
 
       {/* Warehouse Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
-          <div className="col-span-full py-16 text-center text-slate-500">Loading warehouses...</div>
+          <div className="col-span-full py-16 text-center text-zinc-500 font-mono text-xs">Loading facility network...</div>
         ) : filteredWarehouses.length === 0 ? (
-          <div className="col-span-full bg-slate-900/60 rounded-2xl border border-slate-800/80 p-12 text-center text-slate-400">
+          <div className="col-span-full bg-[#0E1014] rounded-xl border border-[#232730] p-12 text-center text-zinc-400 font-mono text-xs">
             {warehouseSearch || statusFilter !== 'ALL'
-              ? 'No warehouses match the search or filter criteria.'
-              : 'No warehouses found. Click "+ Add Warehouse" to create one.'}
+              ? 'No warehouse facilities match the filter parameters.'
+              : 'No facilities configured. Click "+ Provision Facility" to initiate setup.'}
           </div>
         ) : (
           filteredWarehouses.map((wh) => {
@@ -256,30 +257,31 @@ export default function Warehouses() {
               <div
                 key={wh._id}
                 onClick={() => setSelectedWarehouse(wh)}
-                className={`rounded-2xl border transition-all cursor-pointer p-6 relative ${
+                className={`rounded-xl border transition-all cursor-pointer p-4 relative ${
                   isSelected
-                    ? 'bg-slate-900 border-cyan-500/80 ring-2 ring-cyan-500/20 shadow-xl shadow-cyan-500/10'
-                    : 'bg-slate-900/80 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900'
+                    ? 'bg-[#12141A] border-amber-500/80 shadow-lg shadow-amber-500/5 ring-1 ring-amber-500/30'
+                    : 'bg-[#0E1014] border-[#232730] hover:border-zinc-600 hover:bg-[#12141A]'
                 }`}
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
-                      <IconBuilding className="w-5 h-5" />
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center">
+                      <IconBuilding className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-white text-base sm:text-lg">{wh.name}</h3>
+                      <h3 className="font-bold text-white text-sm font-mono tracking-tight">{wh.name}</h3>
                       <span
-                        className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded uppercase mt-0.5 border ${
+                        className={`inline-block px-1.5 py-0.2 text-[10px] font-mono rounded border uppercase mt-0.5 ${
                           wh.isActive
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                            : 'bg-slate-800 text-slate-400 border-slate-700'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            : 'bg-zinc-800 text-zinc-500 border-zinc-700'
                         }`}
                       >
-                        {wh.isActive ? 'Active' : 'Inactive'}
+                        {wh.isActive ? 'ACTIVE' : 'OFFLINE'}
                       </span>
                     </div>
                   </div>
+
                   <div className="flex items-center gap-1">
                     <button
                       onClick={(e) => {
@@ -291,36 +293,36 @@ export default function Warehouses() {
                           isActive: wh.isActive,
                         });
                       }}
-                      className="p-1.5 text-slate-400 hover:text-cyan-400 rounded-lg hover:bg-slate-800/80 transition-colors"
-                      title="Edit Warehouse"
+                      className="p-1 text-zinc-400 hover:text-white rounded hover:bg-zinc-800 transition-colors text-xs font-mono"
+                      title="Edit Facility Parameters"
                     >
-                      ✏️
+                      [EDIT]
                     </button>
                     {wh.isActive && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (confirm(`Are you sure you want to deactivate ${wh.name}?`)) {
+                          if (confirm(`Decommission facility ${wh.name}?`)) {
                             deleteWarehouseMutation.mutate(wh._id);
                           }
                         }}
-                        className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800/80 transition-colors"
-                        title="Deactivate Warehouse"
+                        className="p-1 text-rose-400 hover:text-rose-300 rounded hover:bg-rose-500/10 transition-colors text-xs font-mono"
+                        title="Decommission Facility"
                       >
-                        🗑️
+                        [OFFLINE]
                       </button>
                     )}
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-400 mb-4 min-h-[2.5rem]">
-                  {wh.address || 'No physical address configured'}
+                <p className="text-xs text-zinc-400 mb-3 min-h-[2rem]">
+                  {wh.address || 'No physical address designated'}
                 </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-800/80 text-xs">
-                  <span className="text-slate-400 font-medium">Bin Locations</span>
-                  <span className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono font-bold px-2.5 py-0.5 rounded-full">
-                    {isSelected ? bins?.length ?? '...' : 'Click to view'}
+                <div className="flex items-center justify-between pt-3 border-t border-[#1F232B] text-xs font-mono">
+                  <span className="text-zinc-500">Coordinate Bins</span>
+                  <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[11px]">
+                    {isSelected ? `${bins?.length ?? 0} mapped` : 'Click to inspect'}
                   </span>
                 </div>
               </div>
@@ -331,30 +333,34 @@ export default function Warehouses() {
 
       {/* Selected Warehouse Bin Location Explorer */}
       {selectedWarehouse && (
-        <div className="bg-slate-900/80 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800/80 pb-4 gap-3">
+        <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#232730] pb-3 gap-3">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">
-                Bin Locations in <span className="text-cyan-400">{selectedWarehouse.name}</span>
-              </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Organize inventory by aisle, rack, and shelf (e.g., A-01-02)
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <h3 className="text-sm font-semibold text-white font-mono uppercase tracking-wider">
+                  Topological Bins // {selectedWarehouse.name}
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Physical rack, shelf, and floor zone partitioning for directed picking and storage
               </p>
             </div>
+
             <div className="flex items-center gap-2">
               <div className="relative w-44">
-                <span className="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+                <span className="absolute left-2.5 top-2 text-zinc-500 text-xs font-mono">BIN:</span>
                 <input
                   type="text"
                   placeholder="Filter bins..."
                   value={binSearch}
                   onChange={(e) => setBinSearch(e.target.value)}
-                  className="w-full pl-7 pr-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30"
+                  className="w-full pl-10 pr-3 py-1.5 bg-[#090A0C] border border-[#232730] rounded-lg text-xs font-mono text-white placeholder-zinc-600 outline-none focus:border-amber-500/50"
                 />
               </div>
               <button
                 onClick={() => setShowAddBin(true)}
-                className="px-4 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-semibold rounded-xl transition-all shadow-md shadow-cyan-500/20 whitespace-nowrap"
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold font-mono rounded-lg transition-all shadow-md shadow-amber-500/10 whitespace-nowrap"
               >
                 + Add Bin
               </button>
@@ -362,35 +368,35 @@ export default function Warehouses() {
           </div>
 
           {isLoadingBins ? (
-            <div className="py-8 text-center text-slate-500">Loading bins...</div>
+            <div className="py-8 text-center text-zinc-500 font-mono text-xs">Scanning storage grid...</div>
           ) : filteredBins.length === 0 ? (
-            <div className="py-8 text-center text-slate-400 bg-slate-950/60 rounded-xl border border-slate-800/80">
-              {binSearch ? 'No bins match your filter.' : 'No specific bins registered in this warehouse yet.'}
+            <div className="py-8 text-center text-zinc-400 font-mono text-xs bg-[#090A0C] rounded-lg border border-[#232730]">
+              {binSearch ? 'No bin coordinates match query.' : 'No storage bins defined in this warehouse.'}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
               {filteredBins.map((bin) => (
                 <div
                   key={bin._id}
-                  className="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 flex flex-col justify-between hover:border-cyan-500/40 transition-colors"
+                  className="bg-[#090A0C] border border-[#232730] rounded-lg p-2.5 flex flex-col justify-between hover:border-amber-500/40 transition-colors"
                 >
                   <div className="flex items-start justify-between">
-                    <span className="font-mono font-bold text-white text-sm">{bin.code}</span>
+                    <span className="font-mono font-bold text-amber-400 text-xs">{bin.code}</span>
                     <button
                       onClick={() => {
-                        if (confirm(`Delete bin location ${bin.code}?`)) {
+                        if (confirm(`Remove bin location ${bin.code}?`)) {
                           deleteBinMutation.mutate(bin._id);
                         }
                       }}
-                      className="text-slate-500 hover:text-rose-400 text-xs transition-colors"
+                      className="text-zinc-600 hover:text-rose-400 text-xs transition-colors font-mono"
                       title="Delete Bin"
                     >
                       ✕
                     </button>
                   </div>
                   {bin.zone && (
-                    <span className="text-[11px] text-slate-400 mt-2 bg-slate-900 px-2 py-0.5 rounded border border-slate-800 font-mono">
-                      Zone: {bin.zone}
+                    <span className="text-[10px] text-zinc-400 mt-2 bg-[#12141A] px-1.5 py-0.5 rounded border border-[#232730] font-mono truncate">
+                      {bin.zone}
                     </span>
                   )}
                 </div>
@@ -402,53 +408,56 @@ export default function Warehouses() {
 
       {/* Add Warehouse Modal */}
       {showAddWarehouse && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-              <h3 className="text-base font-bold text-white">New Warehouse</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0E1014] border border-[#232730] rounded-xl shadow-2xl max-w-md w-full p-5 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-amber-500">Site Provisioning</span>
+                <h3 className="text-base font-bold text-white font-mono">Provision Warehouse Facility</h3>
+              </div>
               <button
                 onClick={() => setShowAddWarehouse(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
+                className="text-zinc-500 hover:text-white text-sm font-mono"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleCreateWarehouse} className="space-y-4">
+            <form onSubmit={handleCreateWarehouse} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Warehouse Name*</label>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Facility Name *</label>
                 <input
                   type="text"
                   value={warehouseForm.name}
                   onChange={(e) => setWarehouseForm({ ...warehouseForm, name: e.target.value })}
-                  placeholder="Main Distribution Center"
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
+                  placeholder="e.g. Central Logistics Node 01"
+                  className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg text-white text-xs focus:border-amber-500/50 outline-none font-mono"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Address / Location</label>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Physical Address / Bay Coordinates</label>
                 <textarea
                   value={warehouseForm.address}
                   onChange={(e) => setWarehouseForm({ ...warehouseForm, address: e.target.value })}
-                  placeholder="100 Logistics Blvd, Dock 4"
+                  placeholder="e.g. 500 Industrial Pkwy, Dock 12-B"
                   rows={2}
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm placeholder-slate-500"
+                  className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg text-white text-xs placeholder-zinc-600 focus:border-amber-500/50 outline-none font-mono"
                 />
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-2 border-t border-[#232730]">
                 <button
                   type="button"
                   onClick={() => setShowAddWarehouse(false)}
-                  className="flex-1 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
+                  className="flex-1 py-2 border border-[#232730] text-zinc-400 hover:text-white rounded-lg text-xs font-mono"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createWarehouseMutation.isPending}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
+                  className="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg text-xs font-mono transition-all disabled:opacity-50"
                 >
-                  {createWarehouseMutation.isPending ? 'Saving...' : 'Create Warehouse'}
+                  {createWarehouseMutation.isPending ? 'Provisioning...' : 'Provision Node'}
                 </button>
               </div>
             </form>
@@ -458,63 +467,66 @@ export default function Warehouses() {
 
       {/* Edit Warehouse Modal */}
       {editingWarehouse && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-              <h3 className="text-base font-bold text-white">Edit Warehouse</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0E1014] border border-[#232730] rounded-xl shadow-2xl max-w-md w-full p-5 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-amber-500">Configuration</span>
+                <h3 className="text-base font-bold text-white font-mono">Edit Facility Parameters</h3>
+              </div>
               <button
                 onClick={() => setEditingWarehouse(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
+                className="text-zinc-500 hover:text-white text-sm font-mono"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleUpdateWarehouse} className="space-y-4">
+            <form onSubmit={handleUpdateWarehouse} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Warehouse Name*</label>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Facility Name *</label>
                 <input
                   type="text"
                   value={editWarehouseForm.name}
                   onChange={(e) => setEditWarehouseForm({ ...editWarehouseForm, name: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
+                  className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg text-white text-xs focus:border-amber-500/50 outline-none font-mono"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Address / Location</label>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Address / Dock Details</label>
                 <textarea
                   value={editWarehouseForm.address}
                   onChange={(e) => setEditWarehouseForm({ ...editWarehouseForm, address: e.target.value })}
                   rows={2}
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
+                  className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg text-white text-xs focus:border-amber-500/50 outline-none font-mono"
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
                   id="warehouseActiveToggle"
                   checked={editWarehouseForm.isActive}
                   onChange={(e) => setEditWarehouseForm({ ...editWarehouseForm, isActive: e.target.checked })}
-                  className="rounded border-slate-700 bg-slate-950 text-cyan-500 focus:ring-cyan-500 w-4 h-4"
+                  className="rounded border-[#232730] bg-[#090A0C] text-amber-500 focus:ring-amber-500 w-4 h-4"
                 />
-                <label htmlFor="warehouseActiveToggle" className="text-xs font-medium text-slate-300">
-                  Warehouse Active
+                <label htmlFor="warehouseActiveToggle" className="text-xs font-mono text-zinc-300">
+                  Facility Operational (Active)
                 </label>
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-2 border-t border-[#232730]">
                 <button
                   type="button"
                   onClick={() => setEditingWarehouse(null)}
-                  className="flex-1 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
+                  className="flex-1 py-2 border border-[#232730] text-zinc-400 hover:text-white rounded-lg text-xs font-mono"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updateWarehouseMutation.isPending}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
+                  className="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg text-xs font-mono transition-all disabled:opacity-50"
                 >
-                  {updateWarehouseMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  {updateWarehouseMutation.isPending ? 'Saving...' : 'Commit Changes'}
                 </button>
               </div>
             </form>
@@ -524,54 +536,57 @@ export default function Warehouses() {
 
       {/* Add Bin Modal */}
       {showAddBin && selectedWarehouse && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 text-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-              <h3 className="text-base font-bold text-white">Add Bin Location</h3>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0E1014] border border-[#232730] rounded-xl shadow-2xl max-w-md w-full p-5 space-y-4 text-white">
+            <div className="flex items-center justify-between border-b border-[#232730] pb-3">
+              <div>
+                <span className="text-[10px] font-mono uppercase text-amber-500">Rack & Floor Mapping</span>
+                <h3 className="text-base font-bold text-white font-mono">Add Bin Coordinate</h3>
+              </div>
               <button
                 onClick={() => setShowAddBin(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800/80 transition-colors"
+                className="text-zinc-500 hover:text-white text-sm font-mono"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleCreateBin} className="space-y-4">
+            <form onSubmit={handleCreateBin} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Bin Code*</label>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Bin Coordinate Identifier *</label>
                 <input
                   type="text"
                   value={binForm.code}
                   onChange={(e) => setBinForm({ ...binForm, code: e.target.value.toUpperCase() })}
-                  placeholder="e.g. A-01-03"
-                  className="w-full px-4 py-2 font-mono font-bold bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm"
+                  placeholder="e.g. A-02-04"
+                  className="w-full px-3 py-2 font-mono font-bold bg-[#090A0C] border border-[#232730] rounded-lg focus:border-amber-500/50 outline-none text-white text-xs"
                   required
                 />
-                <p className="text-[11px] text-slate-500 mt-1">Suggested format: Aisle-Rack-Shelf</p>
+                <p className="text-[10px] font-mono text-zinc-500 mt-1">Recommended schema: Aisle-Rack-Shelf (e.g., A-01-02)</p>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Zone (Optional)</label>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Zone Tag (Optional)</label>
                 <input
                   type="text"
                   value={binForm.zone}
                   onChange={(e) => setBinForm({ ...binForm, zone: e.target.value })}
-                  placeholder="e.g. Pallet Rack, Cold Storage, Fast Pick"
-                  className="w-full px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white text-sm placeholder-slate-500"
+                  placeholder="e.g. Pallet Bulk, Fast Pick, Cold Lock"
+                  className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg focus:border-amber-500/50 outline-none text-white text-xs font-mono placeholder-zinc-600"
                 />
               </div>
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-2 border-t border-[#232730]">
                 <button
                   type="button"
                   onClick={() => setShowAddBin(false)}
-                  className="flex-1 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
+                  className="flex-1 py-2 border border-[#232730] text-zinc-400 hover:text-white rounded-lg text-xs font-mono"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={createBinMutation.isPending}
-                  className="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 text-sm"
+                  className="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg text-xs font-mono transition-all disabled:opacity-50"
                 >
-                  {createBinMutation.isPending ? 'Saving...' : 'Add Bin'}
+                  {createBinMutation.isPending ? 'Mapping...' : 'Commit Coordinate'}
                 </button>
               </div>
             </form>

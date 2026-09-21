@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
-import { IconTruck, IconClose } from './Icons';
+import { IconTruck } from './Icons';
 
 interface ShipOrderModalProps {
   so: any;
@@ -100,118 +100,117 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800/90 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-100">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-in fade-in duration-150">
+      <div className="bg-[#0E1014] border border-[#2B303C] rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden text-zinc-100">
         {/* Header */}
-        <div className="p-6 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
-                <IconTruck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white tracking-tight">
-                  Dispatch Shipment: <span className="font-mono text-cyan-400">{so.orderNumber}</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Customer: <span className="font-medium text-slate-200">{so.customerName}</span> • Warehouse:{' '}
-                  <span className="font-medium text-slate-200">{so.warehouseId?.name || 'Warehouse'}</span>
-                </p>
-              </div>
+        <div className="p-5 border-b border-[#232730] flex items-center justify-between bg-[#12141A]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[#191D26] border border-amber-500/40 text-amber-400 flex items-center justify-center">
+              <IconTruck className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-zinc-100 font-mono tracking-tight">
+                OUTBOUND_DISPATCH // <span className="text-amber-400">{so.orderNumber}</span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Client: <span className="font-semibold text-zinc-200">{so.customerName}</span> • Origin:{' '}
+                <span className="font-semibold text-zinc-200">{so.warehouseId?.name || 'Warehouse'}</span>
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800/80 transition-colors"
+            className="text-zinc-400 hover:text-zinc-100 p-1.5 rounded hover:bg-[#1A1E26] transition-colors font-mono text-xs"
           >
-            <IconClose className="w-5 h-5" />
+            [ESC]
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#12141A] p-3.5 rounded-lg border border-[#232730]">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Logistics Carrier*
+              <label className="block text-[10px] font-mono font-bold text-zinc-400 mb-1">
+                LOGISTICS_CARRIER*
               </label>
               <select
                 value={carrier}
                 onChange={(e) => setCarrier(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none text-white font-medium"
+                className="w-full px-3 py-1.5 text-xs bg-[#090A0C] border border-[#262B35] rounded-md focus:border-amber-500 outline-none text-zinc-100 font-mono font-medium"
               >
-                <option value="FedEx" className="bg-slate-900 text-white">FedEx</option>
-                <option value="UPS" className="bg-slate-900 text-white">UPS</option>
-                <option value="DHL" className="bg-slate-900 text-white">DHL Express</option>
-                <option value="USPS" className="bg-slate-900 text-white">USPS</option>
-                <option value="Blue Dart" className="bg-slate-900 text-white">Blue Dart</option>
-                <option value="Freight / Other" className="bg-slate-900 text-white">Freight / Other</option>
+                <option value="FedEx">FedEx Express</option>
+                <option value="UPS">UPS Worldwide</option>
+                <option value="DHL">DHL Express</option>
+                <option value="USPS">USPS Priority</option>
+                <option value="Blue Dart">Blue Dart</option>
+                <option value="Freight / Dedicated">Dedicated Fleet / Freight</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Tracking / AWB Number
+              <label className="block text-[10px] font-mono font-bold text-zinc-400 mb-1">
+                WAYBILL_TRACKING_NUMBER
               </label>
               <input
                 type="text"
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
-                placeholder="e.g. TRK-987654321"
-                className="w-full px-3 py-2 text-sm bg-slate-900 border border-slate-700 rounded-xl focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono text-white placeholder-slate-500"
+                placeholder="TRK-987654321"
+                className="w-full px-3 py-1.5 text-xs bg-[#090A0C] border border-[#262B35] rounded-md focus:border-amber-500 outline-none font-mono text-zinc-100 placeholder-zinc-600"
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Select Items to Ship</h4>
-              <div className="flex items-center gap-3">
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between pb-2 border-b border-[#232730] text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+              <span>Verified Picked Items Ready to Ship</span>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleShipAll}
-                  className="text-xs font-medium text-cyan-400 hover:text-cyan-300 hover:underline transition-colors"
+                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors"
                 >
-                  Ship All Picked
+                  [SHIP_ALL_PICKED]
                 </button>
-                <span className="text-slate-700">|</span>
+                <span className="text-zinc-700">|</span>
                 <button
                   type="button"
                   onClick={handleClearAll}
-                  className="text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+                  className="text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
-                  Clear
+                  [CLEAR]
                 </button>
               </div>
             </div>
+
             {lines.map((line, index) => (
               <div
                 key={line.productId}
-                className="p-4 rounded-xl border border-slate-800/80 bg-slate-950/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-3.5 rounded-lg border border-[#232730] bg-[#12141A] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold bg-slate-900 text-slate-200 px-2 py-0.5 rounded border border-slate-700">
+                    <span className="font-mono text-xs font-bold bg-[#181C25] text-amber-400 px-2 py-0.5 rounded border border-[#2B313E]">
                       {line.productSku}
                     </span>
-                    <span className="font-semibold text-white">{line.productName}</span>
+                    <span className="font-semibold text-zinc-100 text-xs">{line.productName}</span>
                   </div>
-                  <div className="text-xs text-slate-400 mt-1 flex gap-3">
-                    <span>Picked: <strong className="text-slate-200 font-mono">{line.pickedQty}</strong></span>
-                    <span>Already Shipped: <strong className="text-slate-200 font-mono">{line.alreadyShipped}</strong></span>
-                    <span className="text-cyan-400 font-bold font-mono">Remaining to Ship: {line.remainingToShip}</span>
+                  <div className="text-[11px] font-mono text-zinc-400 mt-1 flex gap-3">
+                    <span>PICKED: <strong className="text-zinc-200">{line.pickedQty}</strong></span>
+                    <span>SHIPPED: <strong className="text-zinc-200">{line.alreadyShipped}</strong></span>
+                    <span className="text-amber-400 font-bold">READY: {line.remainingToShip}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <label className="text-xs font-semibold text-slate-300">Ship Qty:</label>
+                  <label className="text-xs font-mono font-bold text-zinc-400">SHIP_QTY:</label>
                   <input
                     type="number"
                     min="0"
                     max={line.remainingToShip}
                     value={line.shippedQty}
                     onChange={(e) => updateShippedQty(index, parseInt(e.target.value) || 0)}
-                    className="w-24 px-3 py-1.5 text-sm bg-slate-900 border border-slate-700 rounded-lg focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 outline-none font-mono font-bold text-center text-white"
+                    className="w-20 px-2.5 py-1 text-xs bg-[#090A0C] border border-[#262B35] rounded-md focus:border-amber-500 outline-none font-mono font-bold text-center text-zinc-100"
                     required
                   />
                 </div>
@@ -219,24 +218,24 @@ export default function ShipOrderModal({ so, onClose, onSuccess }: ShipOrderModa
             ))}
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-400">
-              Generates an immutable <code className="font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Shipment</code> audit record and updates delivery tracking.
+          <div className="pt-4 border-t border-[#232730] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-[11px] text-zinc-500 font-mono">
+              Generates immutable <code className="text-amber-400 bg-[#161921] px-1 py-0.5 rounded border border-[#272D3A]">Shipment</code> audit records and updates fulfillment pipeline.
             </p>
-            <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800/80 transition-colors text-sm"
+                className="px-4 py-2 border border-[#262B35] text-zinc-400 hover:text-zinc-100 hover:bg-[#161922] font-mono font-medium rounded-lg transition-colors text-xs"
               >
-                Cancel
+                CANCEL
               </button>
               <button
                 type="submit"
                 disabled={shipMutation.isPending}
-                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 text-sm"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 font-mono font-bold rounded-lg transition-all shadow-xs disabled:opacity-50 text-xs btn-tactile"
               >
-                {shipMutation.isPending ? 'Generating Shipment...' : 'Confirm Shipment'}
+                {shipMutation.isPending ? 'DISPATCHING...' : 'CONFIRM_DISPATCH'}
               </button>
             </div>
           </div>
