@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useSocket } from '../context/SocketContext';
+import CommandPaletteModal from './CommandPaletteModal';
+import BarcodeScannerModal from './BarcodeScannerModal';
 
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isConnected } = useSocket();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [showScannerModal, setShowScannerModal] = useState(false);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowCommandPalette((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const { data: alerts } = useQuery({
     queryKey: ['alerts', 'active'],
@@ -247,30 +262,59 @@ export default function Layout() {
               </nav>
             </div>
 
-            {/* User Profile & Actions */}
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-[#232730]">
-                <div className="w-7 h-7 rounded-md bg-[#161920] border border-[#272B36] text-amber-400 font-mono font-bold text-xs flex items-center justify-center">
-                  {userInitials}
-                </div>
-                <div className="flex flex-col text-left leading-none">
-                  <span className="text-xs font-semibold text-zinc-200">{user.name || 'Staff User'}</span>
-                  <span className="text-[9px] font-mono uppercase tracking-wider text-amber-400/80 font-bold mt-0.5">
-                    {user.role || 'STAFF'}
-                  </span>
-                </div>
-              </div>
+            {/* Search Palette & Quick Barcode Action */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowCommandPalette(true)}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#13161D] border border-[#232730] hover:border-amber-500/40 text-zinc-400 hover:text-zinc-200 text-xs transition-colors"
+                title="Search commands and SKUs (Ctrl+K)"
+              >
+                <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="8" strokeWidth="2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m21 21-4.35-4.35" />
+                </svg>
+                <span className="font-sans">Search (Ctrl+K)...</span>
+                <kbd className="ml-1 px-1.5 py-0.2 text-[9px] font-mono font-semibold bg-[#1A1E27] text-zinc-400 border border-[#2B313F] rounded">
+                  &prop;K
+                </kbd>
+              </button>
 
               <button
-                onClick={handleLogout}
-                className="px-2.5 py-1.5 text-xs font-medium text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 rounded-md border border-[#232730] transition-colors flex items-center gap-1.5"
-                title="Log out of terminal"
+                onClick={() => setShowScannerModal(true)}
+                className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#14171E] border border-[#262B35] hover:border-amber-500/50 hover:bg-[#181C25] text-amber-400 text-xs font-mono font-semibold flex items-center gap-1.5 transition-all shadow-xs btn-tactile"
+                title="Quick Barcode Scanner"
               >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                 </svg>
-                <span className="hidden sm:inline">Logout</span>
+                <span className="hidden sm:inline">SCAN</span>
               </button>
+
+              {/* User Profile & Actions */}
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-[#232730]">
+                  <div className="w-7 h-7 rounded-md bg-[#161920] border border-[#272B36] text-amber-400 font-mono font-bold text-xs flex items-center justify-center">
+                    {userInitials}
+                  </div>
+                  <div className="flex flex-col text-left leading-none">
+                    <span className="text-xs font-semibold text-zinc-200">{user.name || 'Staff User'}</span>
+                    <span className="text-[9px] font-mono uppercase tracking-wider text-amber-400/80 font-bold mt-0.5">
+                      {user.role || 'STAFF'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="px-2.5 py-1.5 text-xs font-medium text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 rounded-md border border-[#232730] transition-colors flex items-center gap-1.5"
+                  title="Log out of terminal"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -335,6 +379,17 @@ export default function Layout() {
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
         <Outlet />
       </main>
+
+      {/* Global Interactive Modals */}
+      <CommandPaletteModal
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onTriggerScanner={() => setShowScannerModal(true)}
+      />
+
+      {showScannerModal && (
+        <BarcodeScannerModal onClose={() => setShowScannerModal(false)} />
+      )}
     </div>
   );
 }
