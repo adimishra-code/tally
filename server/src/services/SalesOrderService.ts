@@ -23,19 +23,50 @@ export class SalesOrderService {
   static async create(params: CreateSOParams): Promise<ISalesOrder> {
     const { orgId, customerName, warehouseId, lines, createdBy } = params;
 
-    // Generate order number
-    const count = await SalesOrder.countDocuments({ orgId });
-    const orderNumber = `SO-${String(count + 1).padStart(6, '0')}`;
+    // Generate unique order number safely under concurrency
+    let so: ISalesOrder | null = null;
+    let attempts = 0;
+    const maxAttempts = 5;
 
-    const so = await SalesOrder.create({
-      orgId,
-      orderNumber,
-      customerName,
-      warehouseId,
-      lines,
-      createdBy,
-      status: SalesOrderStatus.DRAFT,
-    });
+    while (!so && attempts < maxAttempts) {
+      attempts++;
+      const lastSO = await SalesOrder.findOne({ orgId }).sort({ createdAt: -1 }).select('orderNumber').lean();
+      let nextSeq = 1;
+      if (lastSO && lastSO.orderNumber) {
+        const match = lastSO.orderNumber.match(/SO-(\d+)/);
+        if (match) {
+          nextSeq = parseInt(match[1], 10) + 1;
+        }
+      } else {
+        const count = await SalesOrder.countDocuments({ orgId });
+        nextSeq = count + 1;
+      }
+      if (attempts > 1) {
+        nextSeq += attempts - 1;
+      }
+      const orderNumber = `SO-${String(nextSeq).padStart(6, '0')}`;
+
+      try {
+        so = await SalesOrder.create({
+          orgId,
+          orderNumber,
+          customerName,
+          warehouseId,
+          lines,
+          createdBy,
+          status: SalesOrderStatus.DRAFT,
+        });
+      } catch (err: any) {
+        if (err.code === 11000 && attempts < maxAttempts) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!so) {
+      throw new Error('Failed to generate unique sales order number after multiple attempts');
+    }
 
     await this.logAudit(orgId, createdBy, 'SO_CREATED', so._id, {}, { status: so.status });
 

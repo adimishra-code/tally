@@ -33,5 +33,7 @@ const auditLogSchema = new Schema<IAuditLog>(
 );
 
 auditLogSchema.index({ orgId: 1, entityType: 1, entityId: 1, createdAt: -1 });
+auditLogSchema.index({ orgId: 1, createdAt: -1 });
+auditLogSchema.index({ orgId: 1, action: 1, createdAt: -1 });
 
 export const AuditLog = model<IAuditLog>('AuditLog', auditLogSchema);

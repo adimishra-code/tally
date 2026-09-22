@@ -30,25 +30,56 @@ export class PurchaseOrderService {
       throw new Error('Organization not found');
     }
 
-    // Generate PO number (simple sequential, could be more sophisticated)
-    const count = await PurchaseOrder.countDocuments({ orgId });
-    const poNumber = `PO-${String(count + 1).padStart(6, '0')}`;
+    // Generate unique PO number safely under concurrency
+    let po: IPurchaseOrder | null = null;
+    let attempts = 0;
+    const maxAttempts = 5;
 
-    const po = await PurchaseOrder.create({
-      orgId,
-      poNumber,
-      supplierName,
-      warehouseId,
-      status: PurchaseOrderStatus.DRAFT,
-      lines: lines.map((line) => ({
-        ...line,
-        receivedQty: 0,
-      })),
-      requiresApprovalAbove: org.poApprovalThreshold,
-      createdBy,
-    });
+    while (!po && attempts < maxAttempts) {
+      attempts++;
+      const lastPO = await PurchaseOrder.findOne({ orgId }).sort({ createdAt: -1 }).select('poNumber').lean();
+      let nextSeq = 1;
+      if (lastPO && lastPO.poNumber) {
+        const match = lastPO.poNumber.match(/PO-(\d+)/);
+        if (match) {
+          nextSeq = parseInt(match[1], 10) + 1;
+        }
+      } else {
+        const count = await PurchaseOrder.countDocuments({ orgId });
+        nextSeq = count + 1;
+      }
+      if (attempts > 1) {
+        nextSeq += attempts - 1;
+      }
+      const poNumber = `PO-${String(nextSeq).padStart(6, '0')}`;
 
-    await this.logAudit(orgId, createdBy, 'PO_CREATED', po._id, {}, { poNumber, status: po.status });
+      try {
+        po = await PurchaseOrder.create({
+          orgId,
+          poNumber,
+          supplierName,
+          warehouseId,
+          status: PurchaseOrderStatus.DRAFT,
+          lines: lines.map((line) => ({
+            ...line,
+            receivedQty: 0,
+          })),
+          requiresApprovalAbove: org.poApprovalThreshold,
+          createdBy,
+        });
+      } catch (err: any) {
+        if (err.code === 11000 && attempts < maxAttempts) {
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    if (!po) {
+      throw new Error('Failed to generate unique purchase order number after multiple attempts');
+    }
+
+    await this.logAudit(orgId, createdBy, 'PO_CREATED', po._id, {}, { poNumber: po.poNumber, status: po.status });
 
     broadcastOrderUpdate(orgId.toString(), {
       type: 'PO',

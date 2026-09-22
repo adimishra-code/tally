@@ -54,6 +54,9 @@ const stockLedgerEntrySchema = new Schema<IStockLedgerEntry>(
 
 // Powers "what's the current balance" and "history for this SKU at this warehouse" queries
 stockLedgerEntrySchema.index({ orgId: 1, productId: 1, warehouseId: 1, createdAt: -1 });
+stockLedgerEntrySchema.index({ orgId: 1, warehouseId: 1, createdAt: -1 });
+stockLedgerEntrySchema.index({ orgId: 1, warehouseId: 1, binId: 1, createdAt: -1 });
 stockLedgerEntrySchema.index({ orgId: 1, referenceType: 1, referenceId: 1 });
+stockLedgerEntrySchema.index({ orgId: 1, createdAt: -1 });
 
 export const StockLedgerEntry = model<IStockLedgerEntry>('StockLedgerEntry', stockLedgerEntrySchema);

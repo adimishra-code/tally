@@ -200,7 +200,8 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       .sort({ createdAt: -1 })
       .populate('createdBy', 'name email')
       .populate('warehouseId', 'name')
-      .populate('lines.productId', 'sku name unit');
+      .populate('lines.productId', 'sku name unit')
+      .lean();
 
     res.json(sos);
   } catch (error) {

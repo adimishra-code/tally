@@ -32,5 +32,8 @@ const productSchema = new Schema<IProduct>(
 );
 
 productSchema.index({ orgId: 1, sku: 1 }, { unique: true });
+productSchema.index({ orgId: 1, isActive: 1, createdAt: -1 });
+productSchema.index({ orgId: 1, name: 1 });
+productSchema.index({ orgId: 1, createdAt: -1 });
 
 export const Product = model<IProduct>('Product', productSchema);

@@ -98,7 +98,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       ];
     }
 
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+    const products = await Product.find(filter).sort({ createdAt: -1 }).lean();
 
     res.json(products);
   } catch (error) {
@@ -112,7 +112,7 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
 router.get(['/export', '/export/csv'], requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const authReq = req as AuthRequest;
-    const products = await Product.find({ orgId: authReq.orgId }).sort({ sku: 1 });
+    const products = await Product.find({ orgId: authReq.orgId }).sort({ sku: 1 }).lean();
 
     const headers = [
       'SKU',

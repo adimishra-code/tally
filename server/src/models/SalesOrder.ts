@@ -53,6 +53,8 @@ const salesOrderSchema = new Schema<ISalesOrder>(
 );
 
 salesOrderSchema.index({ orgId: 1, orderNumber: 1 }, { unique: true });
-salesOrderSchema.index({ orgId: 1, status: 1 });
+salesOrderSchema.index({ orgId: 1, status: 1, createdAt: -1 });
+salesOrderSchema.index({ orgId: 1, warehouseId: 1, status: 1, createdAt: -1 });
+salesOrderSchema.index({ orgId: 1, createdAt: -1 });
 
 export const SalesOrder = model<ISalesOrder>('SalesOrder', salesOrderSchema);

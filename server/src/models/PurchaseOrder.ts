@@ -57,6 +57,8 @@ const purchaseOrderSchema = new Schema<IPurchaseOrder>(
 );
 
 purchaseOrderSchema.index({ orgId: 1, poNumber: 1 }, { unique: true });
-purchaseOrderSchema.index({ orgId: 1, status: 1 });
+purchaseOrderSchema.index({ orgId: 1, status: 1, createdAt: -1 });
+purchaseOrderSchema.index({ orgId: 1, warehouseId: 1, status: 1, createdAt: -1 });
+purchaseOrderSchema.index({ orgId: 1, createdAt: -1 });
 
 export const PurchaseOrder = model<IPurchaseOrder>('PurchaseOrder', purchaseOrderSchema);

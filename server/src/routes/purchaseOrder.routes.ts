@@ -174,7 +174,8 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
       .populate('createdBy', 'name email')
       .populate('approvedBy', 'name email')
       .populate('warehouseId', 'name')
-      .populate('lines.productId', 'sku name unit');
+      .populate('lines.productId', 'sku name unit')
+      .lean();
 
     res.json(pos);
   } catch (error) {
