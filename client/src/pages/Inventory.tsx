@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
@@ -15,6 +15,8 @@ export default function Inventory() {
   const [search, setSearch] = useState('');
   const [stockFilter, setStockFilter] = useState<'ALL' | 'IN_STOCK' | 'LOW' | 'OUT'>('ALL');
   const [sortBy, setSortBy] = useState<'balance_desc' | 'balance_asc' | 'sku' | 'name'>('balance_desc');
+  const [density, setDensity] = useState<'comfortable' | 'compact'>('comfortable');
+  const [copiedSku, setCopiedSku] = useState<string | null>(null);
 
   // Forms
   const [adjustForm, setAdjustForm] = useState({
@@ -42,6 +44,20 @@ export default function Inventory() {
       return data;
     },
   });
+
+  // Auto-select first active warehouse on initial load so inventory is immediately populated
+  useEffect(() => {
+    if (warehouses && warehouses.length > 0 && !warehouseId) {
+      setWarehouseId(warehouses[0]._id);
+    }
+  }, [warehouses, warehouseId]);
+
+  const handleCopySku = (sku: string) => {
+    navigator.clipboard.writeText(sku);
+    setCopiedSku(sku);
+    toast.success(`Copied SKU ${sku}`, { duration: 1500 });
+    setTimeout(() => setCopiedSku(null), 2000);
+  };
 
   const { data: products } = useQuery<Product[]>({
     queryKey: ['products'],
@@ -378,6 +394,49 @@ export default function Inventory() {
         </div>
       )}
 
+      {/* Stock Health Distribution Bar */}
+      {warehouseId && totalSkus > 0 && (
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-3.5 shadow-sm space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-zinc-200">Catalog Health Distribution</span>
+              <span className="text-[10px] text-zinc-500">({totalSkus} tracked SKUs)</span>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] flex-wrap">
+              <span className="flex items-center gap-1.5 text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                Optimal: {Math.max(0, totalSkus - lowStockCount - outOfStockCount)} ({totalSkus > 0 ? (((totalSkus - lowStockCount - outOfStockCount) / totalSkus) * 100).toFixed(0) : 0}%)
+              </span>
+              <span className="flex items-center gap-1.5 text-amber-400">
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                Low: {lowStockCount} ({totalSkus > 0 ? ((lowStockCount / totalSkus) * 100).toFixed(0) : 0}%)
+              </span>
+              <span className="flex items-center gap-1.5 text-rose-400">
+                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
+                Depleted: {outOfStockCount} ({totalSkus > 0 ? ((outOfStockCount / totalSkus) * 100).toFixed(0) : 0}%)
+              </span>
+            </div>
+          </div>
+          <div className="w-full h-2 bg-[#171A21] rounded-full overflow-hidden flex">
+            <div
+              style={{ width: `${totalSkus > 0 ? (((totalSkus - lowStockCount - outOfStockCount) / totalSkus) * 100) : 0}%` }}
+              className="bg-emerald-500 h-full transition-all"
+              title="Optimal stock"
+            />
+            <div
+              style={{ width: `${totalSkus > 0 ? ((lowStockCount / totalSkus) * 100) : 0}%` }}
+              className="bg-amber-500 h-full transition-all"
+              title="Low stock reorder point"
+            />
+            <div
+              style={{ width: `${totalSkus > 0 ? ((outOfStockCount / totalSkus) * 100) : 0}%` }}
+              className="bg-rose-500 h-full transition-all"
+              title="Depleted stock"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Filter and Search Bar */}
       {warehouseId && (
         <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-3.5 flex flex-col md:flex-row items-center gap-3 shadow-sm">
@@ -433,6 +492,7 @@ export default function Inventory() {
                 DEPLETED ({outOfStockCount})
               </button>
             </div>
+
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
@@ -443,6 +503,27 @@ export default function Inventory() {
               <option value="sku">SORT: SKU [A-Z]</option>
               <option value="name">SORT: NAME [A-Z]</option>
             </select>
+
+            <div className="flex items-center bg-[#12141A] p-0.5 rounded-lg border border-[#262B35]">
+              <button
+                onClick={() => setDensity('comfortable')}
+                className={`px-2 py-1 text-[10px] font-mono rounded transition-colors ${
+                  density === 'comfortable' ? 'bg-[#1C202B] text-amber-400 font-bold' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+                title="Comfortable row density"
+              >
+                COMFY
+              </button>
+              <button
+                onClick={() => setDensity('compact')}
+                className={`px-2 py-1 text-[10px] font-mono rounded transition-colors ${
+                  density === 'compact' ? 'bg-[#1C202B] text-amber-400 font-bold' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+                title="High-density data rows"
+              >
+                COMPACT
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -486,19 +567,36 @@ export default function Inventory() {
                     const isLow = item.balance <= rp && item.balance > 0;
                     const isEmpty = item.balance === 0;
                     const val = item.valuation ?? ((item.balance || 0) * (item.costPrice || 0));
+                    const rowPad = density === 'compact' ? 'py-1.5' : 'py-3';
                     return (
                       <tr key={item.productId} className="hover:bg-[#13161C] transition-colors industrial-row">
-                        <td className="px-4 py-3">
-                          <code className="text-xs font-mono text-amber-400 font-bold bg-[#171A21] px-2 py-0.5 rounded border border-[#2B313E]">
-                            {item.sku}
-                          </code>
+                        <td className={`px-4 ${rowPad}`}>
+                          <div className="flex items-center gap-1.5">
+                            <code className="text-xs font-mono text-amber-400 font-bold bg-[#171A21] px-2 py-0.5 rounded border border-[#2B313E]">
+                              {item.sku}
+                            </code>
+                            <button
+                              onClick={() => handleCopySku(item.sku)}
+                              className="p-1 text-zinc-500 hover:text-amber-400 rounded transition-colors"
+                              title="Copy SKU to clipboard"
+                            >
+                              {copiedSku === item.sku ? (
+                                <span className="text-[10px] text-emerald-400 font-mono font-bold">✓</span>
+                              ) : (
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
                         </td>
-                        <td className="px-4 py-3 font-semibold text-zinc-100">{item.name}</td>
-                        <td className="px-4 py-3 text-zinc-500 font-mono">{item.unit}</td>
-                        <td className="px-4 py-3 text-right font-mono text-zinc-400">
+                        <td className={`px-4 ${rowPad} font-semibold text-zinc-100`}>{item.name}</td>
+                        <td className={`px-4 ${rowPad} text-zinc-500 font-mono`}>{item.unit}</td>
+                        <td className={`px-4 ${rowPad} text-right font-mono text-zinc-400`}>
                           {rp}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono">
+                        <td className={`px-4 ${rowPad} text-right font-mono`}>
                           <span
                             className={`text-base font-extrabold ${
                               isEmpty ? 'text-rose-400' : isLow ? 'text-amber-400' : 'text-emerald-400'
@@ -507,10 +605,10 @@ export default function Inventory() {
                             {item.balance}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-zinc-300">
+                        <td className={`px-4 ${rowPad} text-right font-mono text-zinc-300`}>
                           ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className={`px-4 ${rowPad}`}>
                           {isEmpty ? (
                             <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-rose-950/40 text-rose-300 border border-rose-800/60 rounded uppercase">
                               DEPLETED
@@ -525,10 +623,10 @@ export default function Inventory() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-zinc-500 font-mono text-[11px]">
+                        <td className={`px-4 ${rowPad} text-zinc-500 font-mono text-[11px]`}>
                           {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : 'N/A'}
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className={`px-4 ${rowPad} text-center`}>
                           <div className="flex items-center justify-center gap-1 font-mono text-[10px]">
                             <button
                               onClick={() => handleQuickAdjust(item)}

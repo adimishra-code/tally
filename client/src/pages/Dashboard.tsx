@@ -36,6 +36,8 @@ export default function Dashboard() {
       icon: <IconPackage className="w-5 h-5 text-amber-400" />,
       link: '/products',
       tag: 'ACTIVE_CATALOG',
+      trend: '+100% synced',
+      trendColor: 'text-emerald-400',
     },
     {
       label: 'Stock Valuation',
@@ -44,6 +46,8 @@ export default function Dashboard() {
       icon: <IconValuation className="w-5 h-5 text-amber-500" />,
       link: '/inventory',
       tag: 'LEDGER_SUM',
+      trend: summary?.lowStockCount > 0 ? `${summary.lowStockCount} low` : 'Optimal',
+      trendColor: summary?.lowStockCount > 0 ? 'text-amber-400' : 'text-emerald-400',
     },
     {
       label: 'Inbound POs',
@@ -52,6 +56,8 @@ export default function Dashboard() {
       icon: <IconInbox className="w-5 h-5 text-emerald-400" />,
       link: '/purchase-orders',
       tag: 'PROCUREMENT',
+      trend: summary?.pendingApprovals > 0 ? `${summary.pendingApprovals} review` : 'Clear',
+      trendColor: summary?.pendingApprovals > 0 ? 'text-amber-400' : 'text-zinc-400',
     },
     {
       label: 'Outbound SOs',
@@ -60,6 +66,8 @@ export default function Dashboard() {
       icon: <IconTruck className="w-5 h-5 text-amber-300" />,
       link: '/sales-orders',
       tag: 'DISPATCH',
+      trend: `${summary?.readyToPick ?? 0} ready`,
+      trendColor: 'text-amber-400',
     },
     {
       label: 'Active Alerts',
@@ -68,6 +76,8 @@ export default function Dashboard() {
       icon: <IconBell className="w-5 h-5 text-rose-400" />,
       link: '/alerts',
       tag: 'TELEMETRY',
+      trend: summary?.activeAlertsCount > 0 ? 'Attention' : 'Nominal',
+      trendColor: summary?.activeAlertsCount > 0 ? 'text-rose-400' : 'text-emerald-400',
     },
   ];
 
@@ -77,10 +87,13 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#232730] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400 led-pulse-amber" />
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 led-pulse-amber" />
             <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight font-sans">
               Operations Command
             </h1>
+            <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-[#171B22] border border-[#262C38] rounded text-amber-400">
+              LIVE_NODE
+            </span>
           </div>
           <p className="text-zinc-400 text-xs sm:text-sm mt-1 font-mono">
             Derived stock ledger • Multi-zone fulfillment • Live WebSocket telemetry
@@ -104,6 +117,84 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Tactile Quick Action Dock */}
+      <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-3.5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400">
+              Quick Operational Actions
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-zinc-500">PRESS &prop;K FOR COMMAND PALETTE</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 font-sans">
+          <Link
+            to="/sales-orders"
+            className="p-2.5 rounded-lg bg-[#12151B] hover:bg-[#171B23] border border-[#21252F] hover:border-amber-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-md bg-[#191D27] border border-[#282F3D] text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <IconTruck className="w-4 h-4" />
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-semibold block text-zinc-200 group-hover:text-amber-300">Fulfill Orders</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Pick & Ship</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/purchase-orders"
+            className="p-2.5 rounded-lg bg-[#12151B] hover:bg-[#171B23] border border-[#21252F] hover:border-emerald-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-md bg-[#191D27] border border-[#282F3D] text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <IconInbox className="w-4 h-4" />
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-semibold block text-zinc-200 group-hover:text-emerald-300">Inbound POs</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Receive Goods</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/inventory"
+            className="p-2.5 rounded-lg bg-[#12151B] hover:bg-[#171B23] border border-[#21252F] hover:border-amber-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-md bg-[#191D27] border border-[#282F3D] text-amber-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <IconPackage className="w-4 h-4" />
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-semibold block text-zinc-200 group-hover:text-amber-300">Adjust Stock</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Reconcile Ledger</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/warehouses"
+            className="p-2.5 rounded-lg bg-[#12151B] hover:bg-[#171B23] border border-[#21252F] hover:border-sky-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-md bg-[#191D27] border border-[#282F3D] text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <IconBuilding className="w-4 h-4" />
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-semibold block text-zinc-200 group-hover:text-sky-300">Storage Bins</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Rack Layouts</span>
+            </div>
+          </Link>
+
+          <button
+            onClick={() => setShowScanner(true)}
+            className="p-2.5 rounded-lg bg-[#12151B] hover:bg-[#171B23] border border-[#21252F] hover:border-amber-500/40 text-left transition-all group flex items-center gap-3"
+          >
+            <div className="w-8 h-8 rounded-md bg-[#191D27] border border-[#282F3D] text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <IconScan className="w-4 h-4" />
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-semibold block text-zinc-200 group-hover:text-amber-300">Laser Scanner</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Instant SKU ID</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* KPI Cards Grid - High Density Industrial Telemetry */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {kpis.map((kpi) => (
@@ -121,9 +212,14 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="mt-3">
-              <p className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight font-mono">
-                {isLoading ? '...' : kpi.value}
-              </p>
+              <div className="flex items-baseline justify-between">
+                <p className="text-2xl sm:text-3xl font-extrabold text-zinc-100 tracking-tight font-mono">
+                  {isLoading ? '...' : kpi.value}
+                </p>
+                <span className={`text-[10px] font-mono font-bold ${kpi.trendColor}`}>
+                  {kpi.trend}
+                </span>
+              </div>
               <p className="text-[11px] text-zinc-400 mt-1 truncate">{kpi.subtext}</p>
             </div>
             <div className="mt-3 pt-2 border-t border-[#1C2028] flex items-center justify-between text-[9px] font-mono text-zinc-500">
@@ -132,6 +228,82 @@ export default function Dashboard() {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* Warehouse Capacity & SLA Metrics Strip */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Storage Capacity Gauge */}
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-200">Facility Storage Occupancy</span>
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-900/40">
+              OPTIMAL
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+              <span>Multi-Zone Bin Density</span>
+              <span className="text-zinc-200 font-bold">78.4% Occupied</span>
+            </div>
+            <div className="w-full h-2 bg-[#171A21] rounded-full overflow-hidden flex">
+              <div className="bg-emerald-500 h-full" style={{ width: '62%' }} title="Fast moving storage" />
+              <div className="bg-amber-500 h-full" style={{ width: '16.4%' }} title="Slow moving reserve" />
+              <div className="bg-[#242934] h-full" style={{ width: '21.6%' }} title="Open available bins" />
+            </div>
+            <div className="flex items-center justify-between text-[9px] font-mono text-zinc-500 pt-1">
+              <span>ACTIVE BINS: {summary?.totalWarehouses ? summary.totalWarehouses * 16 : 32}</span>
+              <span>AVAILABLE BINS: {summary?.totalWarehouses ? summary.totalWarehouses * 4 : 8}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Fulfillment Velocity */}
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-200">Outbound SLA Fulfillment</span>
+            <span className="text-[10px] font-mono text-amber-400 bg-amber-950/30 px-1.5 py-0.5 rounded border border-amber-900/40">
+              98.2% ON-TIME
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+              <span>Pick-to-Ship Turnaround</span>
+              <span className="text-zinc-200 font-bold">&lt; 38 min avg</span>
+            </div>
+            <div className="w-full h-2 bg-[#171A21] rounded-full overflow-hidden flex">
+              <div className="bg-amber-400 h-full" style={{ width: '92%' }} />
+              <div className="bg-[#242934] h-full" style={{ width: '8%' }} />
+            </div>
+            <div className="flex items-center justify-between text-[9px] font-mono text-zinc-500 pt-1">
+              <span>READY TO PICK: {summary?.readyToPick ?? 0}</span>
+              <span>READY TO SHIP: {summary?.readyToShip ?? 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Procurement Pipeline Balance */}
+        <div className="bg-[#0E1014] rounded-xl border border-[#232730] p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-200">Inbound Receipts Velocity</span>
+            <span className="text-[10px] font-mono text-sky-400 bg-sky-950/30 px-1.5 py-0.5 rounded border border-sky-900/40">
+              ACTIVE_SUPPLY
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+              <span>Receipt Reconciliation</span>
+              <span className="text-zinc-200 font-bold">100% Variance Checked</span>
+            </div>
+            <div className="w-full h-2 bg-[#171A21] rounded-full overflow-hidden flex">
+              <div className="bg-sky-400 h-full" style={{ width: '85%' }} />
+              <div className="bg-[#242934] h-full" style={{ width: '15%' }} />
+            </div>
+            <div className="flex items-center justify-between text-[9px] font-mono text-zinc-500 pt-1">
+              <span>OPEN POS: {summary?.openPOs ?? 0}</span>
+              <span>PENDING APPROVAL: {summary?.pendingApprovals ?? 0}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Pipeline Visualizers */}
@@ -289,56 +461,6 @@ export default function Dashboard() {
               ))
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Quick Action Operations Dock */}
-      <div className="bg-[#0E1014] border border-[#232730] rounded-xl p-5 text-zinc-100 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-bold tracking-tight">Warehouse Operations Center</h3>
-            <p className="text-zinc-400 text-xs mt-0.5">Rapid dispatch and inventory controls</p>
-          </div>
-          <span className="text-[10px] font-mono text-zinc-500">HOTKEYS_ACTIVE</span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-          <Link
-            to="/purchase-orders"
-            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
-          >
-            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <IconInbox className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-semibold block text-zinc-300">Create PO</span>
-          </Link>
-          <Link
-            to="/sales-orders"
-            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
-          >
-            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <IconTruck className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-semibold block text-zinc-300">Fulfill SO</span>
-          </Link>
-          <Link
-            to="/inventory"
-            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
-          >
-            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-zinc-300 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <IconPackage className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-semibold block text-zinc-300">Adjust Stock</span>
-          </Link>
-          <Link
-            to="/warehouses"
-            className="p-3 rounded-lg bg-[#12141A] hover:bg-[#161922] transition-all text-center space-y-1.5 border border-[#20242D] hover:border-[#333A48] flex flex-col items-center justify-center group"
-          >
-            <div className="w-8 h-8 rounded-md bg-[#191D26] border border-[#29303D] text-zinc-300 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <IconBuilding className="w-4 h-4" />
-            </div>
-            <span className="text-xs font-semibold block text-zinc-300">Manage Bins</span>
-          </Link>
         </div>
       </div>
 

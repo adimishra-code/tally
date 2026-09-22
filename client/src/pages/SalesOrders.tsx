@@ -449,6 +449,39 @@ export default function SalesOrders() {
                     </div>
                   </div>
 
+                  {/* Visual Status Progression Track */}
+                  {so.status !== 'CANCELLED' && (
+                    <div className="mb-2.5 flex items-center gap-1.5 py-1 px-2.5 bg-[#101217] rounded-lg border border-[#1D212A] overflow-x-auto text-[9px] font-mono">
+                      <span className="text-zinc-500 font-bold uppercase mr-1">TRACK //</span>
+                      {['DRAFT', 'CONFIRMED', 'PICKING', 'PACKED', 'SHIPPED', 'DELIVERED'].map((step, idx, arr) => {
+                        const steps = ['DRAFT', 'CONFIRMED', 'PICKING', 'PACKED', 'SHIPPED', 'DELIVERED'];
+                        const curIdx = steps.indexOf(so.status === 'PARTIALLY_SHIPPED' ? 'PICKING' : so.status);
+                        const isCurrent = curIdx === idx;
+                        const isPassed = curIdx > idx;
+                        return (
+                          <div key={step} className="flex items-center gap-1.5 shrink-0">
+                            <span
+                              className={`px-1.5 py-0.5 rounded font-bold uppercase transition-all ${
+                                isCurrent
+                                  ? 'bg-amber-500 text-zinc-950 shadow-xs'
+                                  : isPassed
+                                  ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/30'
+                                  : 'text-zinc-600 bg-zinc-900/40'
+                              }`}
+                            >
+                              {step}
+                            </span>
+                            {idx < arr.length - 1 && (
+                              <span className={`text-[9px] ${isPassed ? 'text-emerald-500' : 'text-zinc-700'}`}>
+                                &rarr;
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   {/* Lines Breakdown */}
                   <div className="mb-3 bg-[#12141A] rounded-lg p-2.5 border border-[#20242D] space-y-1 font-mono text-xs">
                     {so.lines.map((line: any, idx: number) => (

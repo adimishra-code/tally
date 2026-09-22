@@ -82,8 +82,8 @@ const globalApiLimiter = rateLimit({
 });
 app.use('/api', globalApiLimiter);
 
-// Enhanced operational health check
-app.get('/health', async (_req, res) => {
+// Enhanced operational health check (available at root and API paths)
+app.get(['/health', '/api/health'], async (_req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   const mem = process.memoryUsage();
 

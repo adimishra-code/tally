@@ -478,13 +478,34 @@ export default function PurchaseOrders() {
                         ${totalAmount?.toFixed(2)}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-0.5 text-[9px] font-mono font-bold uppercase rounded border ${getStatusBadge(
-                            po.status
-                          )}`}
-                        >
-                          {po.status.replace(/_/g, ' ')}
-                        </span>
+                        <div className="space-y-1">
+                          <span
+                            className={`inline-block px-2 py-0.5 text-[9px] font-mono font-bold uppercase rounded border ${getStatusBadge(
+                              po.status
+                            )}`}
+                          >
+                            {po.status.replace(/_/g, ' ')}
+                          </span>
+                          {po.status !== 'CANCELLED' && po.status !== 'CLOSED' && (
+                            <div className="flex items-center gap-1 text-[8px] font-mono text-zinc-500" title={`Lifecycle: ${po.status}`}>
+                              {['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'SENT', 'RECEIVED'].map((s, idx) => {
+                                const steps = ['DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'SENT', 'RECEIVED'];
+                                const curIdx = steps.indexOf(po.status === 'PARTIALLY_RECEIVED' ? 'SENT' : po.status);
+                                const isPassed = curIdx > idx;
+                                const isCur = curIdx === idx;
+                                return (
+                                  <span
+                                    key={s}
+                                    className={`w-1.5 h-1.5 rounded-full ${
+                                      isCur ? 'bg-amber-400 led-pulse-amber' : isPassed ? 'bg-emerald-400' : 'bg-zinc-700'
+                                    }`}
+                                    title={s}
+                                  />
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1.5 flex-wrap">
