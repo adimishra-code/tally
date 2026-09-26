@@ -6,6 +6,8 @@ export interface User {
   email: string;
   role: string;
   isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Product {
@@ -19,6 +21,8 @@ export interface Product {
   costPrice: number;
   sellPrice: number;
   isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Alert {
@@ -33,18 +37,34 @@ export interface Alert {
   acknowledgedBy?: { _id: string; name: string; email: string };
 }
 
+export interface PurchaseOrderLine {
+  productId: any;
+  orderedQty: number;
+  receivedQty: number;
+  unitCost: number;
+}
+
 export interface PurchaseOrder {
   _id: string;
   poNumber: string;
   supplierName: string;
   status: string;
-  lines: Array<{
-    productId: string;
-    orderedQty: number;
-    receivedQty: number;
-    unitCost: number;
-  }>;
+  lines: PurchaseOrderLine[];
+  totalAmount?: number;
+  warehouseId?: any;
+  notes?: string;
+  approvedBy?: any;
+  approvedAt?: string;
+  createdBy?: any;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SalesOrderLine {
+  productId: any;
+  orderedQty: number;
+  pickedQty: number;
+  shippedQty: number;
 }
 
 export interface SalesOrder {
@@ -52,12 +72,57 @@ export interface SalesOrder {
   orderNumber: string;
   customerName: string;
   status: string;
-  lines: Array<{
-    productId: string;
-    orderedQty: number;
-    pickedQty: number;
-    shippedQty: number;
-  }>;
+  warehouseId?: any;
+  lines: SalesOrderLine[];
+  createdBy?: any;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface ShipmentLine {
+  productId: any;
+  shippedQty: number;
+}
+
+export interface Shipment {
+  _id: string;
+  orgId: string;
+  salesOrderId: string;
+  carrier?: string;
+  trackingNumber?: string;
+  lines: ShipmentLine[];
+  shippedBy?: { _id: string; name: string; email: string };
+  shippedAt?: string;
+  createdAt: string;
+}
+
+export interface StockLedgerEntry {
+  _id: string;
+  orgId: string;
+  productId: any;
+  warehouseId: any;
+  binId?: any;
+  type: string;
+  quantityChange: number;
+  balanceAfter: number;
+  batchNumber?: string;
+  expiryDate?: string;
+  referenceType: 'PurchaseOrder' | 'SalesOrder' | 'Adjustment' | 'Transfer';
+  referenceId: string;
+  createdBy: any;
+  createdAt: string;
+}
+
+export interface AuditLogEntry {
+  _id: string;
+  orgId: string;
+  userId: { _id: string; name: string; email: string; role?: string };
+  action: string;
+  entityType: string;
+  entityId: string;
+  before?: Record<string, any>;
+  after?: Record<string, any>;
+  ip?: string;
   createdAt: string;
 }
 

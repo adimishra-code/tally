@@ -33,9 +33,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    const socketUrl =
-      ((import.meta as any).env?.VITE_API_URL as string | undefined)?.replace('/api', '') ||
-      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000');
+    const rawApiUrl = (import.meta as any).env?.VITE_API_URL as string | undefined;
+    const socketUrl = rawApiUrl
+      ? rawApiUrl.replace(/\/api\/?$/, '')
+      : (typeof window !== 'undefined' && window.location.hostname !== 'localhost' ? window.location.origin : 'http://localhost:4000');
 
     const socketInstance = io(socketUrl, {
       auth: { token },

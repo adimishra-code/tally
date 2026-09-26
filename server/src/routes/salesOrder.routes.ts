@@ -526,6 +526,16 @@ router.post(
 
       await session.commitTransaction();
 
+      const updatedSo = await SalesOrder.findById(orderId).lean();
+      if (updatedSo) {
+        broadcastOrderUpdate(authReq.orgId.toString(), {
+          type: 'SO',
+          orderId: orderId.toString(),
+          status: updatedSo.status,
+          orderNumber: updatedSo.orderNumber,
+        });
+      }
+
       res.json({ message: 'Order shipped successfully', shipment: shipment[0] });
     } catch (error) {
       await session.abortTransaction();
