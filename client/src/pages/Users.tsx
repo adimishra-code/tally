@@ -127,7 +127,7 @@ export default function Users() {
     if (editFormData.password.trim()) {
       payload.password = editFormData.password.trim();
     }
-    updateMutation.mutate({ id: editingUser._id, data: payload });
+    updateMutation.mutate({ id: editingUser._id || editingUser.id, data: payload });
   };
 
   const startEdit = (user: any) => {

@@ -298,7 +298,7 @@ export default function Warehouses() {
                     >
                       [EDIT]
                     </button>
-                    {wh.isActive && (
+                    {wh.isActive ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -310,6 +310,22 @@ export default function Warehouses() {
                         title="Decommission Facility"
                       >
                         [OFFLINE]
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Reactivate facility ${wh.name}?`)) {
+                            updateWarehouseMutation.mutate({
+                              id: wh._id,
+                              data: { name: wh.name, address: wh.address || '', isActive: true },
+                            });
+                          }
+                        }}
+                        className="p-1 text-emerald-400 hover:text-emerald-300 rounded hover:bg-emerald-500/10 transition-colors text-xs font-mono"
+                        title="Reactivate Facility"
+                      >
+                        [ONLINE]
                       </button>
                     )}
                   </div>
