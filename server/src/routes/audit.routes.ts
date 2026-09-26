@@ -11,7 +11,7 @@ const router = Router();
 router.get(['/export', '/export/csv'], requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const authReq = req as AuthRequest;
-    const { action, entityType, startDate, endDate } = req.query;
+    const { action, entityType, entityId, userId, startDate, endDate } = req.query;
 
     const filter: any = { orgId: authReq.orgId };
 
@@ -21,19 +21,27 @@ router.get(['/export', '/export/csv'], requireAuth, async (req: Request, res: Re
     if (entityType && typeof entityType === 'string') {
       filter.entityType = entityType;
     }
+    if (entityId && typeof entityId === 'string' && Types.ObjectId.isValid(entityId)) {
+      filter.entityId = new Types.ObjectId(entityId);
+    }
+    if (userId && typeof userId === 'string' && Types.ObjectId.isValid(userId)) {
+      filter.userId = new Types.ObjectId(userId);
+    }
     if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate && typeof startDate === 'string') {
         filter.createdAt.$gte = new Date(startDate);
       }
       if (endDate && typeof endDate === 'string') {
-        filter.createdAt.$lte = new Date(endDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
       }
     }
 
     const logs = await AuditLog.find(filter)
       .sort({ createdAt: -1 })
-      .limit(1000)
+      .limit(5000)
       .populate('userId', 'name email');
 
     const headers = ['Timestamp', 'Action', 'Entity Type', 'Entity ID', 'User Name', 'User Email', 'Before', 'After'];
