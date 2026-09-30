@@ -41,6 +41,61 @@ router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> 
 });
 
 /**
+ * GET /warehouses/export/csv - Export warehouses as CSV
+ */
+router.get(['/export', '/export/csv'], requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authReq = req as AuthRequest;
+    const { status, search } = req.query;
+
+    const filter: any = { orgId: authReq.orgId };
+
+    if (status === 'ACTIVE') {
+      filter.isActive = true;
+    } else if (status === 'INACTIVE') {
+      filter.isActive = false;
+    }
+
+    if (search && typeof search === 'string' && search.trim()) {
+      filter.$or = [
+        { name: { $regex: search.trim(), $options: 'i' } },
+        { address: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    const warehouses = await Warehouse.find(filter).sort({ createdAt: -1 });
+
+    // Aggregate bin counts for each warehouse
+    const binCounts = await Bin.aggregate([
+      { $match: { orgId: authReq.orgId } },
+      { $group: { _id: '$warehouseId', count: { $sum: 1 } } },
+    ]);
+    const binCountMap = new Map(binCounts.map((b) => [b._id.toString(), b.count]));
+
+    const headers = ['Name', 'Address', 'Status', 'Bins Count', 'Created At'];
+    const rows = warehouses.map((wh: any) => [
+      `"${(wh.name || '').replace(/"/g, '""')}"`,
+      `"${(wh.address || '').replace(/"/g, '""')}"`,
+      `"${wh.isActive ? 'Active' : 'Inactive'}"`,
+      wh.isActive ? (binCountMap.get(wh._id.toString()) || 0) : 0,
+      `"${wh.createdAt ? new Date(wh.createdAt).toISOString().split('T')[0] : ''}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="tally_warehouses_${new Date().toISOString().slice(0, 10)}.csv"`
+    );
+    res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('Error exporting warehouses:', error);
+    res.status(500).json({ error: 'Internal server error during warehouse export' });
+  }
+});
+
+/**
  * GET /warehouses/:id - Get single warehouse with bin count
  */
 router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {

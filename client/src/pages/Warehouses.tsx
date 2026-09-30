@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import api from '../lib/api';
 import { Warehouse, Bin } from '../types';
-import { IconBuilding } from '../components/Icons';
+import { IconBuilding, IconExport } from '../components/Icons';
 
 export default function Warehouses() {
   const queryClient = useQueryClient();
@@ -147,6 +147,29 @@ export default function Warehouses() {
     });
   };
 
+  const handleExportCsv = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (statusFilter !== 'ALL') params.append('status', statusFilter);
+      if (warehouseSearch) params.append('search', warehouseSearch);
+
+      const response = await api.get(`/warehouses/export/csv?${params.toString()}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `tally_warehouses_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Warehouse facilities exported');
+    } catch {
+      toast.error('Failed to export warehouses');
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Top Header */}
@@ -160,12 +183,21 @@ export default function Warehouses() {
           <p className="text-xs sm:text-sm text-zinc-400 mt-0.5">Manage distribution centers, physical zones, and granular aisle/rack coordinates</p>
         </div>
 
-        <button
-          onClick={() => setShowAddWarehouse(true)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg transition-all shadow-md shadow-amber-500/10 text-xs font-mono flex items-center gap-1.5 self-start md:self-auto"
-        >
-          <span>+ Provision Facility</span>
-        </button>
+        <div className="flex items-center gap-2.5 self-start md:self-auto">
+          <button
+            onClick={handleExportCsv}
+            className="px-3.5 py-2 bg-[#12141A] hover:bg-[#1A1D24] text-zinc-300 hover:text-white border border-[#262B35] rounded-lg transition-all text-xs font-mono flex items-center gap-1.5"
+          >
+            <IconExport className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
+          <button
+            onClick={() => setShowAddWarehouse(true)}
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg transition-all shadow-md shadow-amber-500/10 text-xs font-mono flex items-center gap-1.5"
+          >
+            <span>+ Provision Facility</span>
+          </button>
+        </div>
       </div>
 
       {/* Telemetry KPI Cards */}
