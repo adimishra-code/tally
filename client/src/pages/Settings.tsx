@@ -23,6 +23,9 @@ export default function Settings() {
   const [formData, setFormData] = useState({
     name: '',
     poApprovalThreshold: 10000,
+    currency: 'USD',
+    timezone: 'UTC',
+    contactEmail: '',
   });
 
   const { data: org, isLoading } = useQuery<Organization>({
@@ -52,8 +55,11 @@ export default function Settings() {
   useEffect(() => {
     if (org) {
       setFormData({
-        name: org.name,
-        poApprovalThreshold: org.poApprovalThreshold,
+        name: org.name || '',
+        poApprovalThreshold: org.poApprovalThreshold ?? 10000,
+        currency: org.currency || 'USD',
+        timezone: org.timezone || 'UTC',
+        contactEmail: org.contactEmail || '',
       });
     }
   }, [org]);
@@ -217,6 +223,56 @@ export default function Settings() {
                 />
                 <p className="text-[10px] font-mono text-zinc-500 mt-1">Immutable tenant partition key used for workspace isolation</p>
               </div>
+
+              <div>
+                <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Notification & Billing Contact</label>
+                <input
+                  type="email"
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
+                  placeholder="billing@company.com"
+                  className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg focus:border-amber-500/50 outline-none text-white text-xs font-mono"
+                />
+                <p className="text-[10px] font-mono text-zinc-500 mt-1">Primary administrative and operational contact</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Base Currency</label>
+                  <select
+                    value={formData.currency}
+                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg focus:border-amber-500/50 outline-none text-white text-xs font-mono"
+                  >
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="CAD">CAD ($)</option>
+                    <option value="AUD">AUD ($)</option>
+                    <option value="JPY">JPY (¥)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">Operating Timezone</label>
+                  <select
+                    value={formData.timezone}
+                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                    className="w-full px-3 py-2 bg-[#090A0C] border border-[#232730] rounded-lg focus:border-amber-500/50 outline-none text-white text-xs font-mono"
+                  >
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">America/New_York (EST)</option>
+                    <option value="America/Chicago">America/Chicago (CST)</option>
+                    <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                    <option value="Europe/London">Europe/London (GMT)</option>
+                    <option value="Europe/Berlin">Europe/Berlin (CET)</option>
+                    <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                    <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                    <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                    <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -231,10 +287,10 @@ export default function Settings() {
 
             <div className="max-w-md">
               <label className="block text-[11px] font-mono uppercase text-zinc-400 mb-1">
-                Approval Threshold ($ USD)
+                Approval Threshold ({formData.currency})
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-2 text-zinc-500 font-mono text-xs">$</span>
+                <span className="absolute left-3 top-2 text-zinc-500 font-mono text-xs">{formData.currency === 'INR' ? '₹' : formData.currency === 'EUR' ? '€' : formData.currency === 'GBP' ? '£' : '$'}</span>
                 <input
                   type="number"
                   min="0"

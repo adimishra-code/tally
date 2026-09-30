@@ -10,6 +10,9 @@ const router = Router();
 const updateOrgSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   poApprovalThreshold: z.number().min(0).optional(),
+  currency: z.string().min(2).max(10).optional(),
+  timezone: z.string().min(2).max(50).optional(),
+  contactEmail: z.string().email().or(z.literal('')).optional(),
 });
 
 /**
@@ -69,6 +72,9 @@ router.patch(
         before: {
           name: previous.name,
           poApprovalThreshold: previous.poApprovalThreshold,
+          currency: previous.currency,
+          timezone: previous.timezone,
+          contactEmail: previous.contactEmail,
         },
         after: data,
       });

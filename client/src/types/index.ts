@@ -155,5 +155,8 @@ export interface Organization {
   name: string;
   slug: string;
   poApprovalThreshold: number;
+  currency?: string;
+  timezone?: string;
+  contactEmail?: string;
   createdAt: string;
 }
